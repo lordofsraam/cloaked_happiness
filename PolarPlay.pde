@@ -5,8 +5,11 @@ final int P_AMNT = 20000;
 
 import java.util.Vector;
 import java.lang.Math;
+import java.util.Random;
 
 boolean mouseDown = false;
+
+Random generator = new Random();
 
 class Point
 {
@@ -23,7 +26,8 @@ class Point
   {
     _x = x;
     _y = y;
-    _r = 1+(float)Math.random()*0.10;
+    _r = 1+(float)Math.random()*0.50;
+    if (generator.nextInt(2) > 0) _r *= -1;
     _r_bak = _r;
     
     r = 255;
@@ -66,20 +70,47 @@ class Point
     _r = r;
   }
   
+  public void FlipPolarRadius()
+  {
+    _r *= -1;
+    _r_bak *= -1;
+  }
+  
   public void IncrementPolarRadius(float r)
   {
-    _r += r;
-    if (_r < 0) _r = 0; 
+    if (_r < 0)
+    {
+      _r += r;
+    }
+    else
+    {
+      _r += r;
+    }
+    //if (_r < 0) _r = 0; 
   }
   
   public void MoveToPoint(int x, int y)
   {
-    this.MoveDirection(Math.atan2(y-_y,x-_x));
+    if (_r < 0)
+    {
+      this.MoveDirection(Math.atan2(_y-y,_x-x));
+    }
+    else
+    {
+      this.MoveDirection(Math.atan2(y-_y,x-_x));
+    }
   }
   
   public void MoveFromPoint(int x, int y)
   {
-    this.MoveDirection(Math.atan2(_y-y,_x-x));
+    if (_r < 0)
+    {
+      this.MoveDirection(Math.atan2(y-_y,x-_x));
+    }
+    else
+    {
+      this.MoveDirection(Math.atan2(_y-y,_x-x));
+    }
   }
   
   public void MovePerpendicularToPoint(int x, int y)
@@ -89,7 +120,14 @@ class Point
   
   public void MovePerpendicularToPoint(int x, int y, float o)
   {
-    this.MoveDirection(Math.atan2(y-_y,x-_x)-(HALF_PI+o));
+    if (_r < 0)
+    {
+      this.MoveDirection(Math.atan2(y-_y,x-_x)-(HALF_PI-(o*0.1)));
+    }
+    else
+    {
+      this.MoveDirection(Math.atan2(y-_y,x-_x)-(HALF_PI+o));
+    }
   }
   
   public void ResetPolarRadius()
@@ -111,8 +149,13 @@ void setup()
   }
   for (int i = 0; i < p_vec.size(); i++)
   {
-    p_vec.get(i).r -= i*0.02;
-    p_vec.get(i).g += i*0.02;
+    p_vec.get(i).r -= i*0.015;
+    p_vec.get(i).g += i*0.015;
+    if (i > p_vec.size()*0.75)
+    { 
+      p_vec.get(i).b += i*0.02;
+      //p_vec.get(i).g = 50;
+    }
   }
 }
 
@@ -138,9 +181,19 @@ void mouseReleased()
 
 void keyReleased()
 {
-  for(Point p: p_vec)
+  if (key == 'f')
   {
-    p.ResetPolarRadius();
+    for(Point p: p_vec)
+    {
+      p.FlipPolarRadius();
+    }
+  }
+  else
+  {
+    for(Point p: p_vec)
+    {
+      p.ResetPolarRadius();
+    }
   }
 }
 
@@ -194,8 +247,28 @@ void draw()
       else
       {
         p.MoveDirection(Math.toRadians(frameCount));
+        /*
+        if (generator.nextInt(2) > 0)
+        {
+          p.MoveDirection(-Math.toRadians(frameCount));
+        }
+        else
+        {
+          p.MoveDirection(Math.toRadians(frameCount));
+        }
+        */
+        p.MovePerpendicularToPoint(WIN_X/2,WIN_Y/2,-(float)Math.random()*1.0);
       }
-      if (frameCount % 150 == 0) p.IncrementPolarRadius((float)Math.random()*0.5);
+      if (frameCount % 500 == 0)
+      {
+        p.ResetPolarRadius();
+        //println("Polar Rad reset.");
+      }
+      if (frameCount % 150 == 0)
+      {
+        p.IncrementPolarRadius((float)Math.random()*0.3);
+        //println("Polar Rad incremented.");
+      }
     }
   }
 }
