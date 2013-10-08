@@ -21,7 +21,7 @@ keywords = set(["class","for","if",
 	"const","define","ifndef","endif",
 	"stdio","inline","replaceme",
 	"replacemeinclude", "new","unsigned",
-	"switch","typedef"])
+	"switch","typedef","bool"])
 
 code_file = open("test.cpp", 'rw')
 
