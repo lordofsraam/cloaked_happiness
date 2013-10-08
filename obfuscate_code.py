@@ -10,20 +10,55 @@ TODO:
 -Support more languages
 """
 
-import re
+DEFAULT_FILENAME = "test.cpp"
+FILE_TO_PARSE = ""
+KEYWORDS_DB_FILENAME = "keywords.txtdb"
 
-keywords = set(["class","for","if",
+import re
+import sys
+import os.path
+
+if len(sys.argv) > 1:
+	print "CLI input detected. Will obfuscate file named:",sys.argv[1]
+	FILE_TO_PARSE = sys.argv[1]
+	if not os.path.isfile(FILE_TO_PARSE):
+		print "File",FILE_TO_PARSE,"not found. Exiting...\n"
+		exit()
+	print "\n"
+else:
+	print "No CLI arguments detected. Will obfuscate file named:",DEFAULT_FILENAME
+	FILE_TO_PARSE = DEFAULT_FILENAME
+
+keywords = ["class","for","if",
 	"true","false","public",
 	"private","printf","cout",
 	"cin","int","float","double"
 	"string","std","main","delete",
 	"return","char","include",
 	"const","define","ifndef","endif",
-	"stdio","inline","replaceme",
+	"inline","replaceme",
 	"replacemeinclude", "new","unsigned",
-	"switch","typedef","bool"])
+	"switch","typedef","bool"]
 
-code_file = open("test.cpp", 'rw')
+if os.path.isfile(KEYWORDS_DB_FILENAME):
+	print "Found a keyword database file"
+	kdbf = open(KEYWORDS_DB_FILENAME,"r")
+	print "Loading keywords from file",KEYWORDS_DB_FILENAME
+	kdb = kdbf.read().split()
+	if(raw_input("See the keywords?[y/N]: ") == "y"):
+		print kdb
+	print "Adding keywords to internal database"
+	for k in kdb:
+		keywords.append(k)
+	print "Keywords added\n"
+else:
+	print "No external keyword database file found. Using default.\n"
+
+print "Making keywords a set"
+keywords = set(keywords)
+print "Set made\n"
+
+code_file = open(FILE_TO_PARSE, 'rw')
 
 print "Loading code from file."
 code = code_file.read()
@@ -44,15 +79,19 @@ code = re.sub(r'\".*\"',"replaceme",code)
 
 print "Tokenizing the code"
 code_tokens = set(filter(lambda cologne: cologne != '',re.split('\W+|[0-9]',code)))
-print "Tokenization done"
+print "Tokenization done\n"
 
 if(raw_input("See the tokens?[y/N]: ") == "y"):
 	print code_tokens
+
+print "\n"
 
 variables = code_tokens.difference(keywords)
 
 if(raw_input("See the variables?[y/N]: ") == "y"):
 	print variables
+
+print "\n"
 
 obfus_offset = 1
 
@@ -74,7 +113,9 @@ if(raw_input("See the new code?[y/N]: ") == "y"):
 	print code
 
 print "Creating new file..."
-newfile = open("obfuscated_file.cpp","w")
+if os.path.isfile("obfuscated_"+FILE_TO_PARSE):
+	print "Old obfuscation file detected. Will overwrite."
+newfile = open("obfuscated_"+FILE_TO_PARSE,"w")
 newfile.write(code)
 newfile.close()
-print "New file 'obfuscated_file.cpp' created.\n"
+print "New file 'obfuscated_"+FILE_TO_PARSE+"' created.\n"
