@@ -58,32 +58,6 @@ def scan(hosts):
 			if args.display_option == Display_Types.CLI:
 				for c in hosts_res:
 					print c.summary
-			# elif args.display_option == Display_Types.NCURSES:
-			# 	count = 0
-			# 	inc = 0
-			# 	max_in_x = (mainscr.getmaxyx()[1]/ip_width)
-			# 	max_in_y = (mainscr.getmaxyx()[0]/max_in_x)
-			# 	for c in hosts_res:
-			# 		if count/max_in_y < max_in_y:
-			# 			index_str = "("+("%3d"%count).replace(" ","0")+")"
-			# 			if filter_state == "UP":
-			# 				if c.state == 'up':
-			# 					mainscr.addstr(inc/max_in_x,(inc%max_in_x)*ip_width,(index_str+" "+c.summary).encode('utf-8'))
-			# 					inc += 1
-			# 			elif filter_state == "DOWN":
-			# 				if c.state != 'up':
-			# 					mainscr.addstr(inc/max_in_x,(inc%max_in_x)*ip_width,(index_str+" "+c.summary).encode('utf-8'))
-			# 					inc += 1
-			# 			else:
-			# 				mainscr.addstr(count/max_in_x,(count%max_in_x)*ip_width,(index_str+" "+c.summary).encode('utf-8'))
-			# 		else:
-			# 			break
-			# 		count += 1
-			# 	if need_clear:
-			# 		mainscr.clear()
-			# 		need_clear = False
-			# 	mainscr.addstr(mainscr.getmaxyx()[0]-1,0,":"+input_str)
-			# 	refresh_all()
 			redraw_hosts()
 		except xml.etree.ElementTree.ParseError:
 			_print("Waiting for file.")
