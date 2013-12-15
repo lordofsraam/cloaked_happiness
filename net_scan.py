@@ -98,9 +98,10 @@ def redraw_hosts():
 		count = 0
 		inc = 0
 		max_in_x = (mainscr.getmaxyx()[1]/ip_width)
-		max_in_y = (mainscr.getmaxyx()[0]/max_in_x)
+		max_in_y = (mainscr.getmaxyx()[0] - 3)
 		for c in hosts_res:
-			if count/max_in_y < max_in_y:
+			_print(str(max_in_x)+" "+str(mainscr.getmaxyx()[0]))
+			if count/max_in_x < max_in_y:
 				index_str = "("+("%3d"%count).replace(" ","0")+")"
 				if filter_state == "UP":
 					if c.state == 'up':
@@ -186,7 +187,7 @@ def on_key_down(key):
 	global input_str
 	global cmd_buffer
 	global cmd_index
-
+	global need_clear
 	def refresh():
 		global input_str
 		mainscr.addstr(mainscr.getmaxyx()[0]-1,0," "*(mainscr.getmaxyx()[1]/2))
@@ -219,6 +220,10 @@ def on_key_down(key):
 	elif key == curses.KEY_BACKSPACE:
 		input_str = input_str[:-1]
 		refresh()
+	elif key == curses.KEY_RESIZE: #On screen resize
+		mainscr.clear()
+		redraw_hosts()
+		refresh()
 
 parser = argparse.ArgumentParser(description='Network scanner.')
 mainscr = None
@@ -229,41 +234,44 @@ parser.add_argument('-t','--target', nargs='?', dest='target',help='Target netwo
 
 args = parser.parse_args()
 
-if __name__ == "__main__":
-	if os.geteuid() != 0:
-		print "Need root for deep scans."
-		exit()
-
-	if args.display_option == Display_Types.NCURSES:
-		locale.setlocale(locale.LC_ALL,"")
-		mainscr = curses.initscr()
-		mainscr.nodelay(True)
-		mainscr.keypad(1)
-		curses.noecho()
-		curses.cbreak()
-		curses.curs_set(0)
-		_print("Loading...")
-		file_available = False
-		subprocess.call("nmap -n -v -sn "+args.target+" -oX res.xml",shell=True,stdout=devnull)
-		file_available = True
-	elif args.display_option == Display_Types.CLI:
-		print 'Output will be display in CLI'
-	else:
-		print 'No display type specified. Will use CLI'
-		args.display_option = Display_Types.CLI
-
-
-	try:
+try:
+	if __name__ == "__main__":
+		if os.geteuid() != 0:
+			print "Need root for deep scans."
+			exit()
 		if args.display_option == Display_Types.NCURSES:
-			bg_proc.start()
-			while 1:
-				scan(args.target)
-				on_key_down(mainscr.getch())
-		elif args.display_option == Display_Types.CLI:
-			_print("Scanning...")
+			locale.setlocale(locale.LC_ALL,"")
+			mainscr = curses.initscr()
+			mainscr.nodelay(True)
+			mainscr.keypad(1)
+			curses.noecho()
+			curses.cbreak()
+			curses.curs_set(0)
+			_print("Loading...")
+			file_available = False
 			subprocess.call("nmap -n -v -sn "+args.target+" -oX res.xml",shell=True,stdout=devnull)
 			file_available = True
-			scan(args.target)
-	except KeyboardInterrupt:
-		curses.endwin()
-		exit()
+		elif args.display_option == Display_Types.CLI:
+			print 'Output will be display in CLI'
+		else:
+			print 'No display type specified. Will use CLI'
+			args.display_option = Display_Types.CLI
+		try:
+			if args.display_option == Display_Types.NCURSES:
+				bg_proc.start()
+				while 1:
+					scan(args.target)
+					on_key_down(mainscr.getch())
+			elif args.display_option == Display_Types.CLI:
+				_print("Scanning...")
+				subprocess.call("nmap -n -v -sn "+args.target+" -oX res.xml",shell=True,stdout=devnull)
+				file_available = True
+				scan(args.target)
+		except KeyboardInterrupt:
+			curses.endwin()
+			bg_proc.terminate()
+			exit()
+except Exception as e:
+	curses.endwin()
+	bg_proc.terminate()
+	raise
