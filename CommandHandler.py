@@ -65,7 +65,7 @@ class CommandHandler():
 
 		for c in self.COMMANDS:
 			#if c in command:
-			if re.search(c, command) != None:
+			if re.search(c, command, re.IGNORECASE) != None:
 				try:
 					self.COMMANDS[c](params, params_eol)
 				except IndexError:
