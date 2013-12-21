@@ -176,7 +176,7 @@ if __name__ == '__main__':
     f = LogBotFactory(sys.argv[1], sys.argv[2])
 
     # connect factory to this host and port
-    reactor.connectTCP("15.0.1.10", 6667, f)
+    reactor.connectTCP("irc.azuru.net", 6667, f)
 
     # run bot
     reactor.run()
