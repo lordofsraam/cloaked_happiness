@@ -64,6 +64,7 @@ class CommandHandler():
 					self.reply("Human interface translation system encountered a syntactical error.")
 				except:
 					self.reply("Partial AI core corruption occured.")
+					raise
 				return
 
 #####################################################################################
