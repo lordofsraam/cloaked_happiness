@@ -46,6 +46,8 @@ class Ship:
     Commander = "lordofsraam"
     Fuel = 100 #percent
     LaunchReady = False
+    PortLatch = True
+    StarboardLatch = True
 
 
 def dismissed(self, user, channel, msg):
@@ -113,19 +115,32 @@ def launchseq(self, user, channel, msg):
 
 def dockoff(self, user, channel, msg):
     if user in officers or user == Ship.Commander:
-        self.msg(channel,"Disengaging from dock.")
-        if random.randint(0,1000) > 10:
-            self.msg(channel,"Starboard latches clear.")
+        if "port" in msg.lower():
+            self.msg(channel,"Using manual override to force the latches.")
+            if random.randint(0,1000) > 100:
+                self.msg(channel,"Port latches clear.")
+            else:
+                self.msg(channel,"The port-side latches are broken, sir, but the ship is clear.")
+        elif "starboard" in msg.lower():
+            self.msg(channel,"Using manual override to force the latches.")
+            if random.randint(0,1000) > 100:
+                self.msg(channel,"Starboard latches clear.")
+            else:
+                self.msg(channel,"The starboard-side latches are broken, sir, but the ship is clear.")
         else:
-            self.msg(channel,"Starboard-side latches are jammed, sir.")
-            return
-        if random.randint(0,1000) > 10:
-            self.msg(channel,"Port latches clear.")
-            return
-        else:
-            self.msg(channel,"Port-side latches are jammed, sir.")
-        Ship.Docked = False
-        self.msg(channel,"Ship now fully disengaged from the dock, sir.")
+            self.msg(channel,"Disengaging from dock.")
+            if random.randint(0,1000) > 10:
+                self.msg(channel,"Starboard latches clear.")
+            else:
+                self.msg(channel,"Starboard-side latches are jammed, sir.")
+                return
+            if random.randint(0,1000) > 10:
+                self.msg(channel,"Port latches clear.")
+                return
+            else:
+                self.msg(channel,"Port-side latches are jammed, sir.")
+            Ship.Docked = False
+            self.msg(channel,"Ship now fully disengaged from the dock, sir.")
     else:
         self.msg(channel,"Only the Commander or an officer may issue this command.")
 
