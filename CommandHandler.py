@@ -150,6 +150,7 @@ class CommandHandler():
 				else:
 				    self.reply("The port-side latches are broken, sir, but the ship is clear.")
 				    Ship.PortLatch = False
+				    Ship.Docked = False
 		    elif "starboard" in self.command.lower():
 				self.reply("Using manual override to force the latches.")
 				if random.randint(0,1000) > 9999:
@@ -157,6 +158,7 @@ class CommandHandler():
 				else:
 				    self.reply("The starboard-side latches are broken, sir, but the ship is clear.")
 				    Ship.StarboardLatch = False
+				    Ship.Docked = False
 		    else:
 				self.reply("Disengaging from dock.")
 				if random.randint(0,1000) > 9999:
