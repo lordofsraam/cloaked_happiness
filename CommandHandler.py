@@ -30,19 +30,16 @@ class CommandHandler():
 		self.channel = channel
 		self.user = BasicUser(user)
 		self.COMMANDS = {
-			"you are dismissed": self.dismissed,
-			"who are you": self.whoami,
-			"what are you": self.whoami,
-			"ship status": self.shipstat,
-			"ship's status": self.shipstat,
-			"engines": self.engines,
-			"an officer": self.crew,
-			"where are": self.whereami,
-			"prepare to launch": self.launchseq,
-			"prep to launch": self.launchseq,
-			"undock": self.dockoff,
-			"disengage from dock": self.dockoff,
-			"who is in charge": self.commander,
+			r"^you[\s]+are[\s]+dismissed": self.dismissed,
+			r"^(who|what)[\s]+are[\s]+you": self.whoami,
+			r"^(ship|ship(\'s|s))[\s]+status": self.shipstat,
+			r"^engines": self.engines,
+			r"^an[\s]+officer": self.crew,
+			r"^where[\s]+are": self.whereami,
+			r"^(prepare|prep)[\s]+(to|for)[\s]+launch": self.launchseq,
+			r"^undock": self.dockoff,
+			r"^disengage[\s]+from[\s]+dock": self.dockoff,
+			r"^who[\s]+is[\s]+in[\s]+charge": self.commander,
 		}
 		self.HandleCommand()
 
@@ -55,10 +52,10 @@ class CommandHandler():
 		params_eol = []
 		for i, s in enumerate(params):
 			params_eol.append(u" ".join(params[i::]))
-		#command = params[0].lower()
 
 		for c in self.COMMANDS:
-			if c in command:
+			#if c in command:
+			if re.search(c, command) != None:
 				try:
 					self.COMMANDS[c](params, params_eol)
 				except IndexError:
