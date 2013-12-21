@@ -33,7 +33,7 @@ from twisted.internet import reactor, protocol
 from twisted.python import log
 
 # system imports
-import time, sys, random
+import time, sys, random, re
 
 # Our imports
 import CommandHandler
@@ -101,7 +101,7 @@ class LogBot(irc.IRCClient):
             return
 
         # Otherwise check to see if it is a message directed at me
-        if msg.startswith(self.nickname + ":") or msg.startswith(self.nickname + ","):
+	if re.match(r'^%s[:,.\s]+' % (self.nickname), msg):
             CommandHandler.CommandHandler(self, msg, userfull, channel)
             self.logger.log("<%s> %s" % (self.nickname, msg))
 
