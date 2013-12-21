@@ -94,7 +94,7 @@ class CommandHandler():
 			self.reply("All docking latches are functional.")
 		else:
 			if not Ship.StarboardLatch: self.reply("Starboard docking latch is malfunctioning.")
-			else: self.reply("Starboard docking latch is malfunctioning.")
+			if not Ship.PortLatch: self.reply("Port docking latch is malfunctioning.")
 		self.whereami(params)
 
 	def engines(self, params):
