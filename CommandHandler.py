@@ -1,5 +1,6 @@
 import time, sys, os, random, re
 from twisted.python import log
+from twisted.internet import reactor
 
 class BasicUser():
 	def __init__(self, user):
