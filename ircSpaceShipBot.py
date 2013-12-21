@@ -111,6 +111,18 @@ def launchseq(self, user, channel, msg):
     else:
         self.msg(channel,"Only the Commander or an officer may issue this command.")
 
+def dockoff(self, user, channel, msg):
+    if user in officers or user == Ship.Commander:
+        self.msg(channel,"Disengaging from dock.")
+        time.sleep(1)
+        self.msg(channel,"Starboard latches clear.")
+        time.sleep(1)
+        self.msg(channel,"Port latches clear.")
+        Ship.Docked = False
+        self.msg(channel,"Ship now fully disengaged from the dock, sir.")
+    else:
+        self.msg(channel,"Only the Commander or an officer may issue this command.")
+
 commands["you are dismissed"] = dismissed
 commands["who are you"] = whoami
 commands["what are you"] = whoami
@@ -121,6 +133,8 @@ commands["an officer"] = crew
 commands["where are"] = whereami
 commands["prepare to launch"] = launchseq
 commands["prep to launch"] = launchseq
+commands["undock"] = dockoff
+commands["disengage from dock"] = dockoff
 
 class MessageLogger:
     """
