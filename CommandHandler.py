@@ -142,7 +142,7 @@ class CommandHandler():
 	def launchseq(self, params, params_eol):
 		if self.user.nick in officers or self.user.nick == Ship.Commander:
 		    self.reply("Yes, sir. Running launch sequence.")
-		    if Ship.Engines and Ship.Fuel >= 50 and not Ship.Docked and Ship.Thrusters not Status.Off:
+		    if Ship.Engines and Ship.Fuel >= 50 and not Ship.Docked and Ship.Thrusters != Status.Off:
 				self.reply("Sequence succeeded. The ship is ready to launch.")
 				Ship.LaunchReady = True
 		    else:
