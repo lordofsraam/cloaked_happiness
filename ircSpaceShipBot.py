@@ -45,6 +45,7 @@ class Ship:
     Location = "Earth"
     Commander = "lordofsraam"
     Fuel = 100 #percent
+    LaunchReady = False
 
 
 def dismissed(self, user, channel, msg):
@@ -101,7 +102,12 @@ def whereami(self, user, channel, msg):
 
 def launchseq(self, user, channel, msg):
     if user in officers or user == Ship.Commander:
-        self.msg(channel,"Yes, sir.")
+        self.msg(channel,"Yes, sir. Running launch sequence.")
+        if Ship.Engines and Ship.Fuel >= 50 and not Docked:
+            self.msg(channel,"Sequence succeeded. The ship is ready to launch.")
+            Ship.LaunchReady = True
+        else:
+            self.msg(channel,"Sir, there were errors during the launch procedure check.")
     else:
         self.msg(channel,"Only the Commander or an officer may issue this command.")
 
