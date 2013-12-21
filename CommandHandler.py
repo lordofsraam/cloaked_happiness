@@ -1,4 +1,4 @@
-import time, sys, os, random
+import time, sys, os, random, re
 from twisted.python import log
 
 class BasicUser():
@@ -50,7 +50,7 @@ class CommandHandler():
 
 	def HandleCommand(self):
 		params = self.command.strip().split()
-		command = self.command.split(':')[1].strip()
+		command = re.sub(r'^%s[:,.\s]+' % (self.bot.nickname), "", self.command)
 		params_eol = []
 		for i, s in enumerate(params):
 			params_eol.append(u" ".join(params[i::]))
