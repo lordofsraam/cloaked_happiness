@@ -102,19 +102,7 @@ class LogBot(irc.IRCClient):
 
         # Otherwise check to see if it is a message directed at me
         if msg.startswith(self.nickname + ":") or msg.startswith(self.nickname + ","):
-            #msg = "%s: I am a log bot" % user
-            #self.msg(channel, msg)
-	    CommandHandler.CommandHandler(self, msg, userfull, channel)
-	    """if "who is in charge".upper() in msg.upper():
-                self.msg(channel,"The current commander of this ship is "+Ship.Commander)
-            else:
-
-
-                for i in commands:
-                    if i.upper() in msg.upper():
-                        commands[i](self, user, channel, msg)"""
-            #elif "you are dismissed".upper() in msg.upper():
-                #reactor.stop()
+            CommandHandler.CommandHandler(self, msg, userfull, channel)
             self.logger.log("<%s> %s" % (self.nickname, msg))
 
     def action(self, user, channel, msg):
