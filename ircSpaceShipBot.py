@@ -126,7 +126,7 @@ class LogBot(irc.IRCClient):
         Generate an altered version of a nickname that caused a collision in an
         effort to create an unused related name for subsequent registration.
         """
-        return nickname + '^'
+        return nickname + '_'
 
 
 
