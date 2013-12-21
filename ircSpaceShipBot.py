@@ -33,7 +33,7 @@ from twisted.internet import reactor, protocol
 from twisted.python import log
 
 # system imports
-import time, sys
+import time, sys, random
 
 commands = {}
 
@@ -103,7 +103,7 @@ def whereami(self, user, channel, msg):
 def launchseq(self, user, channel, msg):
     if user in officers or user == Ship.Commander:
         self.msg(channel,"Yes, sir. Running launch sequence.")
-        if Ship.Engines and Ship.Fuel >= 50 and not Docked:
+        if Ship.Engines and Ship.Fuel >= 50 and not Ship.Docked:
             self.msg(channel,"Sequence succeeded. The ship is ready to launch.")
             Ship.LaunchReady = True
         else:
@@ -114,9 +114,7 @@ def launchseq(self, user, channel, msg):
 def dockoff(self, user, channel, msg):
     if user in officers or user == Ship.Commander:
         self.msg(channel,"Disengaging from dock.")
-        time.sleep(1)
         self.msg(channel,"Starboard latches clear.")
-        time.sleep(1)
         self.msg(channel,"Port latches clear.")
         Ship.Docked = False
         self.msg(channel,"Ship now fully disengaged from the dock, sir.")
