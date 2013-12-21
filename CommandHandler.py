@@ -50,6 +50,7 @@ class CommandHandler():
 			r"^undock": self.dockoff,
 			r"^disengage[\s]+from[\s]+dock": self.dockoff,
 			r"^who[\s]+is[\s]+in[\s]+charge": self.commander,
+			r"^thruste(r|rs)": self.thrusters,
 		}
 		self.HandleCommand()
 
@@ -120,6 +121,7 @@ class CommandHandler():
 			else:
 			    self.reply( "Cooling down the engines.")
 			    Ship.Engines = False
+			    Ship.LaunchReady = False
 		else:
 		    self.reply("Only the Commander or an officer may issue this command.")
 
@@ -199,5 +201,6 @@ class CommandHandler():
 			elif "off" in self.command.lower():
 				Ship.Thrusters = Status.Off
 				self.reply("Thrusters succesfully powered down.")
+				Ship.LaunchReady = False
 		else:
 		    self.reply("Only the Commander or an officer may issue this command.")
