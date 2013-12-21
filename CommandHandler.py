@@ -18,7 +18,6 @@ class Ship:
     StarboardLatch = True
 
 commands = {}
-
 officers = []
 
 class CommandHandler():
@@ -52,14 +51,15 @@ class CommandHandler():
 	def HandleCommand(self):
 		params = self.command.strip().split()
 		command = self.command.split(':')[1].strip()
-		#params_eol
+		params_eol = []
+		for i, s in enumerate(params):
+			params_eol.append(u" ".join(params[i::]))
 		#command = params[0].lower()
-
 
 		for c in self.COMMANDS:
 			if c in command:
 				try:
-					self.COMMANDS[c](params)
+					self.COMMANDS[c](params, params_eol)
 				except IndexError:
 					self.reply("Human interface translation system encountered a syntactical error.")
 				except:
@@ -69,21 +69,21 @@ class CommandHandler():
 
 #####################################################################################
 
-	def commander(self, params):
+	def commander(self, params, params_eol):
                	self.reply("The current commander of this ship is "+Ship.Commander)
 
-	def dismissed(self, params):
+	def dismissed(self, params, params_eol):
 		if self.user.nick.upper() == Ship.Commander.upper():
 		    self.reply("Yes, sir. Have a good day, sir.")
 		    reactor.stop()
 		else:
 		    self.reply("I am sorry, "+self.user.nick+", but only the Commander can dismiss me.")
 
-	def whoami(self, params):
+	def whoami(self, params, params_eol):
 		self.reply("I am an AI created to make space travel in this ship easier.")
 		self.reply("My commanding officer, and the captain of this ship, is "+Ship.Commander)
 
-	def shipstat(self, params):
+	def shipstat(self, params, params_eol):
 		self.reply("Running diagnostics checks on the ship...")
 		if Ship.Engines:
 		    self.reply("Engines are up and running.")
@@ -95,9 +95,9 @@ class CommandHandler():
 		else:
 			if not Ship.StarboardLatch: self.reply("Starboard docking latch is malfunctioning.")
 			if not Ship.PortLatch: self.reply("Port docking latch is malfunctioning.")
-		self.whereami(params)
+		self.whereami(params, params_eol)
 
-	def engines(self, params):
+	def engines(self, params, params_eol):
 		if self.user.nick in officers or self.user.nick == Ship.Commander:
 		    if "ON" in self.command.upper():
 			if Ship.Engines:
@@ -114,7 +114,7 @@ class CommandHandler():
 		else:
 		    self.reply("Only the Commander or an officer may issue this command.")
 
-	def crew(self, params):
+	def crew(self, params, params_eol):
 		print self.command
 		if "as an officer" in self.command.lower():
 		    if self.user.nick.upper() == Ship.Commander.upper():
@@ -124,13 +124,13 @@ class CommandHandler():
 		    if self.command.split(" ")[-3] in officers:
 			self.reply("Yes, that person is an officer of this ship.")
 
-	def whereami(self, params):
+	def whereami(self, params, params_eol):
 		if Ship.Docked:
 		    self.reply("We are currently docked at "+Ship.Location)
 		else:
 		    self.reply("We are currently at "+Ship.Location)
 
-	def launchseq(self, params):
+	def launchseq(self, params, params_eol):
 		if self.user.nick in officers or self.user.nick == Ship.Commander:
 		    self.reply("Yes, sir. Running launch sequence.")
 		    if Ship.Engines and Ship.Fuel >= 50 and not Ship.Docked:
@@ -141,7 +141,7 @@ class CommandHandler():
 		else:
 		    self.reply("Only the Commander or an officer may issue this command.")
 
-	def dockoff(self, params):
+	def dockoff(self, params, params_eol):
 		if self.user.nick in officers or self.user.nick == Ship.Commander:
 		    if "port" in self.command.lower():
 				self.reply("Using manual override to force the latches.")
