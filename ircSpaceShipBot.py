@@ -35,127 +35,13 @@ from twisted.python import log
 # system imports
 import time, sys, random
 
+# Our imports
+import CommandHandler
+
 commands = {}
 
 officers = []
 
-class Ship:
-    Engines = False #on or off
-    Docked = True
-    Location = "Earth"
-    Commander = "lordofsraam"
-    Fuel = 100 #percent
-    LaunchReady = False
-    PortLatch = True
-    StarboardLatch = True
-
-
-def dismissed(self, user, channel, msg):
-    if user.upper() == Ship.Commander.upper():
-        self.msg(channel,"Yes, sir. Have a good day, sir.")
-        reactor.stop()
-    else:
-        self.msg(channel,"I am sorry, "+user+", but only the Commander can dismiss me.")
-
-def whoami(self, user, channel, msg):
-    self.msg(channel,"I am an AI created to make space travel in this ship easier.")
-    self.msg(channel,"My commanding officer, and the captain of this ship, is "+Ship.Commander)
-
-def shipstat(self, user, channel, msg):
-    self.msg(channel,"Running diagnostics checks on the ship...")
-    if Ship.Engines:
-        self.msg(channel,"Engines are up and running, sir.")
-    else:
-        self.msg(channel,"Engines are off.")
-    self.msg(channel,"Fuel charges are at %d%% percent."%Ship.Fuel)
-    whereami(self, user, channel, msg)
-
-def engines(self, user, channel, msg):
-    if user in officers or user == Ship.Commander:
-        if "ON" in msg.upper():
-            if Ship.Engines:
-                self.msg(channel, "The engines are already running, sir.")
-            else:
-                self.msg(channel, "Warming up the engines.")
-                Ship.Engines = True
-        elif "OFF" in msg.upper():
-            if not Ship.Engines:
-                self.msg(channel, "The engines are already off, sir.")
-            else:
-                self.msg(channel, "Cooling down the engines.")
-                Ship.Engines = False
-    else:
-        self.msg(channel,"Only the Commander or an officer may issue this command.")
-
-def crew(self, user, channel, msg):
-    if "as an officer" in msg.lower():
-        if user.upper() == Ship.Commander.upper():
-            self.msg(channel,"Yes, sir.")
-            officers.append(msg.split(" ")[-4])
-    elif "an officer" in msg.lower() and "is" in msg.lower():
-        if msg.split(" ")[-3] in officers:
-            self.msg(channel,"Yes, that person is an officer of this ship.")
-
-def whereami(self, user, channel, msg):
-    if Ship.Docked:
-        self.msg(channel,"We are currently docked at "+Ship.Location)
-    else:
-        self.msg(channel,"We are currently at "+Ship.Location)
-
-def launchseq(self, user, channel, msg):
-    if user in officers or user == Ship.Commander:
-        self.msg(channel,"Yes, sir. Running launch sequence.")
-        if Ship.Engines and Ship.Fuel >= 50 and not Ship.Docked:
-            self.msg(channel,"Sequence succeeded. The ship is ready to launch.")
-            Ship.LaunchReady = True
-        else:
-            self.msg(channel,"Sir, there were errors during the launch procedure check.")
-    else:
-        self.msg(channel,"Only the Commander or an officer may issue this command.")
-
-def dockoff(self, user, channel, msg):
-    if user in officers or user == Ship.Commander:
-        if "port" in msg.lower():
-            self.msg(channel,"Using manual override to force the latches.")
-            if random.randint(0,1000) > 100:
-                self.msg(channel,"Port latches clear.")
-            else:
-                self.msg(channel,"The port-side latches are broken, sir, but the ship is clear.")
-        elif "starboard" in msg.lower():
-            self.msg(channel,"Using manual override to force the latches.")
-            if random.randint(0,1000) > 100:
-                self.msg(channel,"Starboard latches clear.")
-            else:
-                self.msg(channel,"The starboard-side latches are broken, sir, but the ship is clear.")
-        else:
-            self.msg(channel,"Disengaging from dock.")
-            if random.randint(0,1000) > 10:
-                self.msg(channel,"Starboard latches clear.")
-            else:
-                self.msg(channel,"Starboard-side latches are jammed, sir.")
-                return
-            if random.randint(0,1000) > 10:
-                self.msg(channel,"Port latches clear.")
-                return
-            else:
-                self.msg(channel,"Port-side latches are jammed, sir.")
-            Ship.Docked = False
-            self.msg(channel,"Ship now fully disengaged from the dock, sir.")
-    else:
-        self.msg(channel,"Only the Commander or an officer may issue this command.")
-
-commands["you are dismissed"] = dismissed
-commands["who are you"] = whoami
-commands["what are you"] = whoami
-commands["ship status"] = shipstat
-commands["ship's status"] = shipstat
-commands["engines"] = engines
-commands["an officer"] = crew
-commands["where are"] = whereami
-commands["prepare to launch"] = launchseq
-commands["prep to launch"] = launchseq
-commands["undock"] = dockoff
-commands["disengage from dock"] = dockoff
 
 class MessageLogger:
     """
@@ -177,18 +63,18 @@ class MessageLogger:
 
 class LogBot(irc.IRCClient):
     """A logging IRC bot."""
-    
+
     nickname = "SpaceShip"
-    
+
     def connectionMade(self):
         irc.IRCClient.connectionMade(self)
         self.logger = MessageLogger(open(self.factory.filename, "a"))
-        self.logger.log("[connected at %s]" % 
+        self.logger.log("[connected at %s]" %
                         time.asctime(time.localtime(time.time())))
 
     def connectionLost(self, reason):
         irc.IRCClient.connectionLost(self, reason)
-        self.logger.log("[disconnected at %s]" % 
+        self.logger.log("[disconnected at %s]" %
                         time.asctime(time.localtime(time.time())))
         self.logger.close()
 
@@ -203,11 +89,11 @@ class LogBot(irc.IRCClient):
         """This will get called when the bot joins the channel."""
         self.logger.log("[I have joined %s]" % channel)
 
-    def privmsg(self, user, channel, msg):
+    def privmsg(self, userfull, channel, msg):
         """This will get called when the bot receives a message."""
-        user = user.split('!', 1)[0]
+        user = userfull.split('!', 1)[0]
         self.logger.log("<%s> %s" % (user, msg))
-        
+
         # Check to see if they're sending me a private message
         if channel == self.nickname:
             msg = "It isn't nice to whisper!  Play nice with the group."
@@ -218,12 +104,15 @@ class LogBot(irc.IRCClient):
         if msg.startswith(self.nickname + ":") or msg.startswith(self.nickname + ","):
             #msg = "%s: I am a log bot" % user
             #self.msg(channel, msg)
-            if "who is in charge".upper() in msg.upper():
+	    CommandHandler.CommandHandler(self, msg, userfull, channel)
+	    """if "who is in charge".upper() in msg.upper():
                 self.msg(channel,"The current commander of this ship is "+Ship.Commander)
             else:
+
+
                 for i in commands:
                     if i.upper() in msg.upper():
-                        commands[i](self, user, channel, msg)
+                        commands[i](self, user, channel, msg)"""
             #elif "you are dismissed".upper() in msg.upper():
                 #reactor.stop()
             self.logger.log("<%s> %s" % (self.nickname, msg))
@@ -280,14 +169,14 @@ class LogBotFactory(protocol.ClientFactory):
 if __name__ == '__main__':
     # initialize logging
     log.startLogging(sys.stdout)
-    
+
     print sys.argv
 
     # create factory protocol and application
     f = LogBotFactory(sys.argv[1], sys.argv[2])
 
     # connect factory to this host and port
-    reactor.connectTCP("irc.azuru.net", 6667, f)
+    reactor.connectTCP("15.0.1.10", 6667, f)
 
     # run bot
     reactor.run()
