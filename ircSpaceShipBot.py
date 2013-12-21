@@ -114,7 +114,7 @@ commands["engines"] = engines
 commands["an officer"] = crew
 commands["where are"] = whereami
 commands["prepare to launch"] = launchseq
-commands["prepto launch"] = launchseq
+commands["prep to launch"] = launchseq
 
 class MessageLogger:
     """
