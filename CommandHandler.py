@@ -44,7 +44,7 @@ class CommandHandler():
 			r"^(who|what)[\s]+are[\s]+you": self.whoami,
 			r"^(ship|ship(\'s|s))[\s]+status": self.shipstat,
 			r"^engines": self.engines,
-			r"^an[\s]+officer": self.crew,
+			r"an[\s]+officer": self.crew,
 			r"^where[\s]+are": self.whereami,
 			r"^(prepare|prep)[\s]+(to|for)[\s]+launch": self.launchseq,
 			r"^undock": self.dockoff,
@@ -190,7 +190,7 @@ class CommandHandler():
 			if "status" in self.command.lower():
 				self.reply("Thruster status: "+Ship.Thrusters)
 			elif "on" in self.command.lower():
-				if Ship.Engines: 
+				if Ship.Engines:
 					self.reply("Thrusters are on and set to auto-stabalize.")
 					Ship.Thrusters = Status.Auto
 				else:
