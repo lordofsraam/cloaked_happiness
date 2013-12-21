@@ -86,10 +86,15 @@ class CommandHandler():
 	def shipstat(self, params):
 		self.reply("Running diagnostics checks on the ship...")
 		if Ship.Engines:
-		    self.reply("Engines are up and running, sir.")
+		    self.reply("Engines are up and running.")
 		else:
 		    self.reply("Engines are off.")
 		self.reply("Fuel charges are at %d%% percent."%Ship.Fuel)
+		if Ship.PortLatch and Ship.StarboardLatch:
+			self.reply("All docking latches are functional.")
+		else:
+			if not Ship.StarboardLatch: self.reply("Starboard docking latch is malfunctioning.")
+			else: self.reply("Starboard docking latch is malfunctioning.")
 		self.whereami(params)
 
 	def engines(self, params):
@@ -139,31 +144,33 @@ class CommandHandler():
 	def dockoff(self, params):
 		if self.user.nick in officers or self.user.nick == Ship.Commander:
 		    if "port" in self.command.lower():
-			self.reply("Using manual override to force the latches.")
-			if random.randint(0,1000) > 100:
-			    self.reply("Port latches clear.")
-			else:
-			    self.reply("The port-side latches are broken, sir, but the ship is clear.")
+				self.reply("Using manual override to force the latches.")
+				if random.randint(0,1000) > 9999:
+				    self.reply("Port latches clear.")
+				else:
+				    self.reply("The port-side latches are broken, sir, but the ship is clear.")
+				    Ship.PortLatch = False
 		    elif "starboard" in self.command.lower():
-			self.reply("Using manual override to force the latches.")
-			if random.randint(0,1000) > 100:
-			    self.reply("Starboard latches clear.")
-			else:
-			    self.reply("The starboard-side latches are broken, sir, but the ship is clear.")
+				self.reply("Using manual override to force the latches.")
+				if random.randint(0,1000) > 9999:
+				    self.reply("Starboard latches clear.")
+				else:
+				    self.reply("The starboard-side latches are broken, sir, but the ship is clear.")
+				    Ship.StarboardLatch = False
 		    else:
-			self.reply("Disengaging from dock.")
-			if random.randint(0,1000) > 10:
-			    self.reply("Starboard latches clear.")
-			else:
-			    self.reply("Starboard-side latches are jammed, sir.")
-			    return
-			if random.randint(0,1000) > 10:
-			    self.reply("Port latches clear.")
-			    return
-			else:
-			    self.reply("Port-side latches are jammed, sir.")
-			Ship.Docked = False
-			self.reply("Ship now fully disengaged from the dock, sir.")
+				self.reply("Disengaging from dock.")
+				if random.randint(0,1000) > 9999:
+				    self.reply("Starboard latches clear.")
+				else:
+				    self.reply("Starboard-side latches are jammed, sir.")
+				    return
+				if random.randint(0,1000) > 9999:
+				    self.reply("Port latches clear.")
+				else:
+				    self.reply("Port-side latches are jammed, sir.")
+				    return
+				Ship.Docked = False
+				self.reply("Ship now fully disengaged from the dock, sir.")
 		else:
 		    self.reply("Only the Commander or an officer may issue this command.")
 
