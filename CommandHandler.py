@@ -146,7 +146,7 @@ class CommandHandler():
 		if self.user.nick in officers or self.user.nick == Ship.Commander:
 		    if "port" in self.command.lower():
 				self.reply("Using manual override to force the latches.")
-				if random.randint(0,1000) > 9999:
+				if random.randint(0,1000) > 20:
 				    self.reply("Port latches clear.")
 				else:
 				    self.reply("The port-side latches are broken, sir, but the ship is clear.")
@@ -154,7 +154,7 @@ class CommandHandler():
 				    Ship.Docked = False
 		    elif "starboard" in self.command.lower():
 				self.reply("Using manual override to force the latches.")
-				if random.randint(0,1000) > 9999:
+				if random.randint(0,1000) > 20:
 				    self.reply("Starboard latches clear.")
 				else:
 				    self.reply("The starboard-side latches are broken, sir, but the ship is clear.")
@@ -162,12 +162,12 @@ class CommandHandler():
 				    Ship.Docked = False
 		    else:
 				self.reply("Disengaging from dock.")
-				if random.randint(0,1000) > 9999:
+				if random.randint(0,1000) > 10:
 				    self.reply("Starboard latches clear.")
 				else:
 				    self.reply("Starboard-side latches are jammed, sir.")
 				    return
-				if random.randint(0,1000) > 9999:
+				if random.randint(0,1000) > 10:
 				    self.reply("Port latches clear.")
 				else:
 				    self.reply("Port-side latches are jammed, sir.")
