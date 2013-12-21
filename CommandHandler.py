@@ -103,6 +103,7 @@ class CommandHandler():
 		else:
 			if not Ship.StarboardLatch: self.reply("Starboard docking latch is malfunctioning.")
 			if not Ship.PortLatch: self.reply("Port docking latch is malfunctioning.")
+		self.reply("Thrusters report status: "+Ship.Thrusters)
 		self.whereami(params, params_eol)
 
 	def engines(self, params, params_eol):
@@ -141,11 +142,11 @@ class CommandHandler():
 	def launchseq(self, params, params_eol):
 		if self.user.nick in officers or self.user.nick == Ship.Commander:
 		    self.reply("Yes, sir. Running launch sequence.")
-		    if Ship.Engines and Ship.Fuel >= 50 and not Ship.Docked:
-			self.reply("Sequence succeeded. The ship is ready to launch.")
-			Ship.LaunchReady = True
+		    if Ship.Engines and Ship.Fuel >= 50 and not Ship.Docked and Ship.Thrusters not Status.Off:
+				self.reply("Sequence succeeded. The ship is ready to launch.")
+				Ship.LaunchReady = True
 		    else:
-			self.reply("Sir, there were errors during the launch procedure check.")
+				self.reply("Sir, there were errors during the launch procedure check.")
 		else:
 		    self.reply("Only the Commander or an officer may issue this command.")
 
