@@ -8,6 +8,15 @@ class BasicUser():
 		self.real = user.split('!', 1)[1].split('@', 1)[0]
 		self.user = user.split('!', 1)[1].split('@', 1)[1]
 
+class Status:
+	Stable = "Stable"
+	Ready = "Ready"
+	Auto = "Auto"
+	Overheated = "Overheated"
+	Malfunctioning = "Malfunctioning"
+	Damaged = "Damaged"
+	Off = "Off"
+
 class Ship:
     Engines = False #on or off
     Docked = True
@@ -17,6 +26,7 @@ class Ship:
     LaunchReady = False
     PortLatch = True
     StarboardLatch = True
+    Thrusters = Status.Off
 
 commands = {}
 officers = []
@@ -175,3 +185,18 @@ class CommandHandler():
 		    self.reply("Only the Commander or an officer may issue this command.")
 
 
+	def thrusters(self, params, params_eol):
+		if self.user.nick in officers or self.user.nick == Ship.Commander:
+			if "status" in self.command.lower():
+				self.reply("Thruster status: "+Ship.Thrusters)
+			elif "on" in self.command.lower():
+				if Ship.Engines: 
+					self.reply("Thrusters are on and set to auto-stabalize.")
+					Ship.Thrusters = Status.Auto
+				else:
+					self.reply("Error. Thruster module replied: No power input.")
+			elif "off" in self.command.lower():
+				Ship.Thrusters = Status.Off
+				self.reply("Thrusters succesfully powered down.")
+		else:
+		    self.reply("Only the Commander or an officer may issue this command.")
