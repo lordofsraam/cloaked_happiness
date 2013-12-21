@@ -27,6 +27,7 @@ class Ship:
     PortLatch = True
     StarboardLatch = True
     Thrusters = Status.Off
+    Velocity = 0
 
 commands = {}
 officers = []
@@ -51,6 +52,7 @@ class CommandHandler():
 			r"^disengage[\s]+from[\s]+dock": self.dockoff,
 			r"^who[\s]+is[\s]+in[\s]+charge": self.commander,
 			r"^thruste(r|rs)": self.thrusters,
+			r"^(launch|(count[\s]+it[\s]+down))": self.launch,
 		}
 		self.HandleCommand()
 
@@ -204,3 +206,6 @@ class CommandHandler():
 				Ship.LaunchReady = False
 		else:
 		    self.reply("Only the Commander or an officer may issue this command.")
+
+	def launch(self, params, params_eol):
+		pass
