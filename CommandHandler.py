@@ -2,11 +2,26 @@ import time, sys, os, random, re
 from twisted.python import log
 from twisted.internet import reactor
 
+officers = []
+
 class BasicUser():
 	def __init__(self, user):
 		self.nick = user.split('!', 1)[0]
 		self.real = user.split('!', 1)[1].split('@', 1)[0]
 		self.user = user.split('!', 1)[1].split('@', 1)[1]
+
+	def isCommander(self):
+		if Ship.Commander.lower() == self.nick.lower():
+			return True
+		else:
+			return False
+
+	def isOfficer(self):
+		global officers
+		if self.isCommander() or self.nick in officers:
+			return True
+		else:
+			return False
 
 class Status:
 	Stable = "Stable"
@@ -21,7 +36,8 @@ class Ship:
     Engines = False #on or off
     Docked = True
     Location = "Earth"
-    Commander = "lordofsraam"
+    #Commander = "lordofsraam"
+    Commander = "NightShadow"
     Fuel = 100 #percent
     LaunchReady = False
     PortLatch = True
@@ -29,8 +45,7 @@ class Ship:
     Thrusters = Status.Off
     Velocity = 0
 
-commands = {}
-officers = []
+
 
 class CommandHandler():
 	""" This class handles all the commands sent in private messages """
@@ -41,11 +56,11 @@ class CommandHandler():
 		self.channel = channel
 		self.user = BasicUser(user)
 		self.COMMANDS = {
-			r"^you[\s]+are[\s]+dismissed": self.dismissed,
+			r"^(power[\s]+down|you[\s]+are[\s]+dismissed)": self.dismissed,
 			r"^(who|what)[\s]+are[\s]+you": self.whoami,
 			r"^(ship|ship(\'s|s))[\s]+status": self.shipstat,
 			r"^engines": self.engines,
-			r"an[\s]+officer": self.crew,
+			r"(are([\s]+the)|an)[\s]+officer": self.crew,
 			r"^where[\s]+are": self.whereami,
 			r"^(prepare|prep)[\s]+(to|for)[\s]+launch": self.launchseq,
 			r"^undock": self.dockoff,
@@ -67,7 +82,6 @@ class CommandHandler():
 			params_eol.append(u" ".join(params[i::]))
 
 		for c in self.COMMANDS:
-			#if c in command:
 			if re.search(c, command, re.IGNORECASE) != None:
 				try:
 					self.COMMANDS[c](params, params_eol)
@@ -84,7 +98,7 @@ class CommandHandler():
                	self.reply("The current commander of this ship is "+Ship.Commander)
 
 	def dismissed(self, params, params_eol):
-		if self.user.nick.upper() == Ship.Commander.upper():
+		if self.user.isCommander():
 		    self.reply("Yes, sir. Have a good day, sir.")
 		    reactor.stop()
 		else:
@@ -110,7 +124,7 @@ class CommandHandler():
 		self.whereami(params, params_eol)
 
 	def engines(self, params, params_eol):
-		if self.user.nick in officers or self.user.nick == Ship.Commander:
+		if self.user.isOfficer():
 		    if "ON" in self.command.upper():
 			if Ship.Engines:
 			    self.reply( "The engines are already running, sir.")
@@ -128,14 +142,20 @@ class CommandHandler():
 		    self.reply("Only the Commander or an officer may issue this command.")
 
 	def crew(self, params, params_eol):
-		print self.command
 		if "as an officer" in self.command.lower():
-		    if self.user.nick.upper() == Ship.Commander.upper():
+		    if self.user.isCommander():
 			self.reply("Yes, sir.")
-			officers.append(self.command.split(" ")[-4])
+			officers.append(params[2])
 		elif "an officer" in self.command.lower() and "is" in self.command.lower():
 		    if self.command.split(" ")[-3] in officers:
-			self.reply("Yes, that person is an officer of this ship.")
+			    self.reply("Yes, that person is an officer of this ship.")
+		    else:
+			    self.reply("No, that person is a civilian of this ship.")
+		elif "are the officers" in self.command.lower():
+			self.reply("%s is the commander" % Ship.Commander)
+			for f in officers:
+				self.reply("%s is an officer" % f)
+
 
 	def whereami(self, params, params_eol):
 		if Ship.Docked:
@@ -144,7 +164,7 @@ class CommandHandler():
 		    self.reply("We are currently at "+Ship.Location)
 
 	def launchseq(self, params, params_eol):
-		if self.user.nick in officers or self.user.nick == Ship.Commander:
+		if self.user.isOfficer():
 		    self.reply("Yes, sir. Running launch sequence.")
 		    if Ship.Engines and Ship.Fuel >= 50 and not Ship.Docked and Ship.Thrusters != Status.Off:
 				self.reply("Sequence succeeded. The ship is ready to launch.")
@@ -155,7 +175,7 @@ class CommandHandler():
 		    self.reply("Only the Commander or an officer may issue this command.")
 
 	def dockoff(self, params, params_eol):
-		if self.user.nick in officers or self.user.nick == Ship.Commander:
+		if self.user.isOfficer():
 		    if "port" in self.command.lower():
 				self.reply("Using manual override to force the latches.")
 				if random.randint(0,1000) > 20:
@@ -191,7 +211,7 @@ class CommandHandler():
 
 
 	def thrusters(self, params, params_eol):
-		if self.user.nick in officers or self.user.nick == Ship.Commander:
+		if self.user.isOfficer():
 			if "status" in self.command.lower():
 				self.reply("Thruster status: "+Ship.Thrusters)
 			elif "on" in self.command.lower():
