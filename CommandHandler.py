@@ -196,7 +196,7 @@ class CommandHandler():
 				self.reply("Thruster status: "+Ship.Thrusters)
 			elif "on" in self.command.lower():
 				if Ship.Engines:
-					self.reply("Thrusters are on and set to auto-stabalize.")
+					self.reply("Thrusters are on and set to auto-stabilize.")
 					Ship.Thrusters = Status.Auto
 				else:
 					self.reply("Error. Thruster module replied: No power input.")
