@@ -38,7 +38,7 @@ keywords = ["class","for","if",
 	"const","define","ifndef","endif",
 	"inline","replaceme",
 	"replacemeinclude", "new","unsigned",
-	"switch","typedef","bool"]
+	"switch","typedef","bool","EOFBreakHere"]
 
 if os.path.isfile(KEYWORDS_DB_FILENAME):
 	print "Found a keyword database file"
@@ -59,9 +59,13 @@ keywords = set(keywords)
 print "Set made\n"
 
 code_file = open(FILE_TO_PARSE, 'rw')
+code_file2 = open("test_dos.cpp",'rw')
+code_file3 = open("test_tres.cpp", 'rw')
+
+file_list = [FILE_TO_PARSE,"test_dos.cpp","test_tres.cpp"]
 
 print "Loading code from file."
-code = code_file.read()
+code = code_file.read() + "\nEOFBreakHere\n" + code_file2.read() + "\nEOFBreakHere\n" + code_file3.read()
 print "Done loading code\n"
 
 code_file.close()
@@ -112,10 +116,18 @@ print "All old strings back in place\n"
 if(raw_input("See the new code?[y/N]: ") == "y"):
 	print code
 
+print len(code.split("EOFBreakHere"))
+
+#exit()
+
 print "Creating new file..."
 if os.path.isfile("obfuscated_"+FILE_TO_PARSE):
 	print "Old obfuscation file detected. Will overwrite."
-newfile = open("obfuscated_"+FILE_TO_PARSE,"w")
-newfile.write(code)
-newfile.close()
+#newfile = open("obfuscated_"+FILE_TO_PARSE,"w")
+#newfile.write(code)
+#newfile.close()
+for i, f in enumerate(file_list):#xrange(len(file_list)):
+	newfile = open("obfuscated_"+f,"w")
+	newfile.write(code.split("EOFBreakHere")[i])
+	newfile.close()
 print "New file 'obfuscated_"+FILE_TO_PARSE+"' created.\n"
