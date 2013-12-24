@@ -3,7 +3,7 @@ import random
 class WordGen:
 	#alphabet = "abcdefghijklmnopqrstuvwxyz"
 	alphabet = "bcdfghjklmnpqrstvwxyz"
-	common = "bcdfgh"
+	common = "bcdfghlmnpst"
 	rare = "qvwxyzkj"
 	vowls = "aeiou"
 	pairs = ["th", "he", "an", "re", "er", "in", "on", "at", "nd", "st", "es", "en", "of", "te", "ed", "or", "ti", "hi", "as", "to"]
@@ -15,56 +15,68 @@ class WordGen:
 		pass
 
 	def GenWord(self):
-		i = 0
-		ending = None
-		word = ""
+		r_str = ""
+		for i in xrange(2):
+			O = random.choice(self.common)
+			if random.randint(0,10) > 6: O = random.choice(self.rare)
+			O2 = random.choice(self.common)
+			if random.randint(0,10) > 6 and O != O2: O += O2
+			N = random.choice(self.vowls)
+			C = ''
+			if random.randint(0,10) > 4: C = random.choice(self.alphabet)
+			r_str += (O+N+C)
+		print r_str
 
-		try:
-			num_of_vowls = (self.length % 7) + 2
-		except ZeroDivisionError:
-			num_of_vowls = 1
+		# i = 0
+		# ending = None
+		# word = ""
 
-		if num_of_vowls > 1:
-			num_of_vowls = 1
+		# try:
+		# 	num_of_vowls = (self.length % 7) + 2
+		# except ZeroDivisionError:
+		# 	num_of_vowls = 1
 
-		if random.randint(0, 1):
-			ending = random.choice(self.endings)
-			leng = self.length - len(ending)
-		else:
-			leng = self.length
+		# if num_of_vowls > 1:
+		# 	num_of_vowls = 1
 
-		print "Length: ", self.length
-		print "Ending: ", ending if ending != None else "(None)"
-		print "Vowls: ", num_of_vowls
+		# if random.randint(0, 1):
+		# 	ending = random.choice(self.endings)
+		# 	leng = self.length - len(ending)
+		# else:
+		# 	leng = self.length
 
-		while i < leng:
-			i += 1
-			if i != num_of_vowls:
-				if i % num_of_vowls:
-					word += random.choice(self.vowls)
-					continue
+		# print "Length: ", self.length
+		# print "Ending: ", ending if ending != None else "(None)"
+		# print "Vowls: ", num_of_vowls
 
-			if random.randrange(1, 100, 2) == 50:
-				word += random.choice(self.doubles)
-				i += 1
-				continue
+		# while i < leng:
+		# 	i += 1
+		# 	if i != num_of_vowls:
+		# 		if i % num_of_vowls:
+		# 			word += random.choice(self.vowls)
+		# 			continue
 
-			if random.randrange(1, 10, 2) == 5:
-				word += random.choice(self.pairs)
-				i += 1
-				continue
+		# 	if random.randrange(1, 100, 2) == 50:
+		# 		word += random.choice(self.doubles)
+		# 		i += 1
+		# 		continue
 
-			if random.randrange(1, 5, 2) == 3:
-				word += random.choice(self.common)
-			elif random.randrange(1, 50, 2) == 23:
-				word += random.choice(self.rare)
-			else:
-				word += random.choice(self.alphabet)
+		# 	if random.randrange(1, 10, 2) == 5:
+		# 		word += random.choice(self.pairs)
+		# 		i += 1
+		# 		continue
 
-		if ending:
-			word += ending
+		# 	if random.randrange(1, 5, 2) == 3:
+		# 		word += random.choice(self.common)
+		# 	elif random.randrange(1, 50, 2) == 23:
+		# 		word += random.choice(self.rare)
+		# 	else:
+		# 		word += random.choice(self.alphabet)
 
-		return word
+		# if ending:
+		# 	word += ending
+
+		# return word
 
 
 
