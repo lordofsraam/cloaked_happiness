@@ -1,6 +1,7 @@
 import time, sys, os, random, re
 from twisted.python import log
 from twisted.internet import reactor
+from PlanetGen import *
 
 officers = []
 
@@ -24,6 +25,27 @@ class BasicUser():
 			return False
 
 
+class Universe:
+	"""
+
+	The idea behind this Universe class is to have a storage
+	method for galaxies. You have an infinite number of galaxies
+	with planets whose distance reaches INT_MAX.
+
+	Once INT_MAX is reached, the galaxy is full.
+	"""
+	def __init__(self):
+		self._galaxies = [
+			{"MilkyWay": MilkyWayGalaxy()},
+		]
+
+	def findGalaxy(self, name):
+		for g in self._galaxies:
+			for i, n in enumerate(g):
+				if name in i:
+					return g[i]
+		return None
+
 class Status:
 	Stable = "Stable"
 	Ready = "Ready"
@@ -32,7 +54,6 @@ class Status:
 	Malfunctioning = "Malfunctioning"
 	Damaged = "Damaged"
 	Off = "Off"
-
 
 class Ship:
 	Engines = False #on or off
@@ -46,15 +67,18 @@ class Ship:
 	StarboardLatch = True
 	Thrusters = Status.Off
 	Velocity = 0
-
+	CurrentGalaxy = None
+	CurrentPlanet = None
 
 class CommandHandler():
 	""" This class handles all the commands sent in private messages """
 
-	def __init__(self, bot, command, user, channel):
+	def __init__(self, bot, command, user, channel, universe):
 		self.command = command
 		self.bot = bot
 		self.channel = channel
+		self.currentGalaxy = galaxy
+		self.universe = universe
 		self.user = BasicUser(user)
 		self.COMMANDS = {
 			r"^(power[\s]+down|you[\s]+are[\s]+dismissed)": self.dismissed,
@@ -69,6 +93,7 @@ class CommandHandler():
 			r"^who[\s]+is[\s]+in[\s]+charge": self.commander,
 			r"^thruste(r|rs)": self.thrusters,
 			r"^(launch|(count[\s]+it[\s]+down))": self.launch,
+			r"^(travel|go)[\s]+to[\s]+planet": self.planet,
 		}
 		self.HandleCommand()
 
@@ -77,7 +102,7 @@ class CommandHandler():
 
 	def HandleCommand(self):
 		params = self.command.strip().split()
-		command = re.sub(r'^%s[:,.\s]+' % (self.bot.nickname), "", self.command)
+		command = re.sub(r'^%s[:,.\s]+' % self.bot.nickname, "", self.command)
 		params_eol = []
 		for i, s in enumerate(params):
 			params_eol.append(u" ".join(params[i::]))
@@ -158,6 +183,15 @@ class CommandHandler():
 			self.reply("%s is the commander" % Ship.Commander)
 			for f in officers:
 				self.reply("%s is an officer" % f)
+
+	def planet(self, params, params_eol):
+		if not self.user.isCommander():
+			self.reply("You must be the commander to launch the ship.")
+			return
+
+		if not Ship.LaunchReady:
+			self.reply("Ship is not ready to enter hyperspace.")
+		else:
 
 
 	def whereami(self, params, params_eol):

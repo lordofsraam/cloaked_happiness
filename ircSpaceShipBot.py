@@ -70,6 +70,7 @@ class LogBot(irc.IRCClient):
 	def connectionMade(self):
 		irc.IRCClient.connectionMade(self)
 		self.logger = MessageLogger(open(self.factory.filename, "a"))
+		self.universe = CommandHandler.Universe()
 		self.logger.log("[connected at %s]" %
 						time.asctime(time.localtime(time.time())))
 
@@ -102,8 +103,8 @@ class LogBot(irc.IRCClient):
 			return
 
 		# Otherwise check to see if it is a message directed at me
-		if re.match(r'^%s[:,.\s]+' % (self.nickname), msg):
-			CommandHandler.CommandHandler(self, msg, userfull, channel)
+		if re.match(r'^%s[:,.\s]+' % self.nickname, msg):
+			CommandHandler.CommandHandler(self, msg, userfull, channel, self.universe)
 			self.logger.log("<%s> %s" % (self.nickname, msg))
 
 	def action(self, user, channel, msg):

@@ -1,94 +1,99 @@
-import random
-
-
-class WordGen:
-	#alphabet = "abcdefghijklmnopqrstuvwxyz"
-	alphabet = "bcdfghjklmnpqrstvwxyz"
-	common = "bcdfghlmnpst"
-	rare = "qvwxyzkj"
-	vowls = "aeiou"
-	pairs = ["th", "he", "an", "re", "er", "in", "on", "at", "nd", "st", "es", "en", "of", "te", "ed", "or", "ti", "hi",
-			 "as", "to"]
-	doubles = ["ll", "ee", "ss", "oo", "tt", "ff", "rr", "nn", "pp", "cc"]
-	endings = ["cy", "ion", "en", "es", "se", "ty"]
-
-	def __init__(self, length):
-		self.length = length
-		pass
-
-	def GenWord(self):
-		r_str = ""
-		for i in xrange(2):
-			O = random.choice(self.common)
-			if random.randint(0, 10) > 6:
-				O = random.choice(self.rare)
-			O2 = random.choice(self.common)
-			if random.randint(0, 10) > 6 and O != O2:
-				O += O2
-			N = random.choice(self.vowls)
-			C = ''
-			if random.randint(0, 10) > 4:
-				C = random.choice(self.alphabet)
-			r_str += (O + N + C)
-		print r_str
-
-	# i = 0
-	# ending = None
-	# word = ""
-
-	# try:
-	# 	num_of_vowls = (self.length % 7) + 2
-	# except ZeroDivisionError:
-	# 	num_of_vowls = 1
-
-	# if num_of_vowls > 1:
-	# 	num_of_vowls = 1
-
-	# if random.randint(0, 1):
-	# 	ending = random.choice(self.endings)
-	# 	leng = self.length - len(ending)
-	# else:
-	# 	leng = self.length
-
-	# print "Length: ", self.length
-	# print "Ending: ", ending if ending != None else "(None)"
-	# print "Vowls: ", num_of_vowls
-
-	# while i < leng:
-	# 	i += 1
-	# 	if i != num_of_vowls:
-	# 		if i % num_of_vowls:
-	# 			word += random.choice(self.vowls)
-	# 			continue
-
-	# 	if random.randrange(1, 100, 2) == 50:
-	# 		word += random.choice(self.doubles)
-	# 		i += 1
-	# 		continue
-
-	# 	if random.randrange(1, 10, 2) == 5:
-	# 		word += random.choice(self.pairs)
-	# 		i += 1
-	# 		continue
-
-	# 	if random.randrange(1, 5, 2) == 3:
-	# 		word += random.choice(self.common)
-	# 	elif random.randrange(1, 50, 2) == 23:
-	# 		word += random.choice(self.rare)
-	# 	else:
-	# 		word += random.choice(self.alphabet)
-
-	# if ending:
-	# 	word += ending
-
-	# return word
-
+__author__ = 'Justin Crawford'
+import random, markov, sys, time
 
 class Planet:
+	def __init__(self, galaxy, distance):
+		# distance (in lightyears, based on center of galaxy)
+		self._distance = distance
+		self._galaxy = galaxy
+		self._name = markov.genWord(random.choice("abcdefghijklmnopqrstuvwxyz"), random.randint(5, 8))
+		self.supportsLife = bool(random.getrandbits(1))
+		self.discoveryDate = time.time()
+		self._mass = 0
+		self._gravity = 0
+
+		if self.supportsLife:
+			self._population = random.randint(1, sys.maxint)
+			self._populationName = markov.genWord(random.choice("abcdefghijklmnopqrstuvwxyz"), random.randint(5, 8))
+			# temperature (in kelvin)
+			self._temperature = random.randint(184, 330)
+		else:
+			self._reason = random.choice([
+				'ATMOSPHERE',
+				'WEATHER',
+				'TERRAIN',
+				'TEMPERATURE',
+				'RADIOACTIVE',
+			])
+			# temperature (in kelvin)
+			self._temperature = random.randint(1, 48000)
+
+		#if self._temperature > 330:
+
+	def getDistance(self):
+		return self._distance
+
+	def getName(self):
+		return self._name
+
+	def population(self):
+		if self.supportsLife:
+			return [self._population, self._populationName]
+		else:
+			return None
+
+	def getTemperature(self, celsius=False, fahrenheit=False):
+		if celsius:
+			return self._temperature - 273.15
+		if fahrenheit:
+			return ((self._temperature - 273.15) * 1.8) + 32
+		return self._temperature
+
+	def supportsLife(self, life=None):
+		if life is None:
+			return self.supportsLife
+		else:
+			self.supportsLife = life
+
+
+
+class Galaxy:
+	def __init__(self, id, name):
+		self.id = id
+		self._name = markov.genWord(random.choice("abcdefghijklmnopqrstuvwxyz"), random.randint(5, 8))
+		self.discoveryDate = time.time()
+		self._planets = []
+
+	def getName(self):
+		return self._name
+
+	def getPlanets(self):
+		return self._planets
+
+	def findPlanet(self, name):
+		for p in self._planets:
+			if name in p.name.lower():
+				return p
+		return None
+
+	def addPlanet(self, planet):
+		if isinstance(planet, Planet):
+
+class MilkyWayGalaxy(Galaxy):
 	def __init__(self):
-		self.distance = 0
+		self.id = 0
+		self._name = "MilkyWay"
+		# Because timestamps cant go negative and still be valid,
+		# the milkygalaxy was discovered in 1970.
+		self.discoveryDate = 0
+		self._planets = [PlanetEarth()]
 
 
 class PlanetEarth(Planet):
 	def __init__(self):
-		pass
+		milkyway = MilkyWayGalaxy()
+		Planet.__init__(self, milkyway, 0)
+		self._name = "Earth"
+		self.supportsLife = True
+		self._populationName = "Human"
+		self._population = 7046553287

@@ -2,7 +2,7 @@ import re, operator, random
 
 f = open("/usr/share/dict/american-english")
 
-words = re.sub('[.!\'\,]', '', f.read()).lower().split()
+words = re.sub(r'[.!\',]', '', f.read()).lower().split()
 
 lang_signature = {'a': {}, 'b': {}, 'c': {},
 					'd': {}, 'e': {}, 'f': {}, 'g': {},
@@ -41,7 +41,6 @@ def genWord(c='a', l=5):
 			ii += 1
 
 	for i in xrange(l - len(c)):
-		letter_signature = lang_signature[c]
 		sorted_signature = sorted(lang_signature[c].iteritems(), key=operator.itemgetter(1), reverse=True)
 		weighted_list = []
 		total = 0
