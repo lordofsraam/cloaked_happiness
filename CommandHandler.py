@@ -23,6 +23,7 @@ class BasicUser():
 		else:
 			return False
 
+
 class Status:
 	Stable = "Stable"
 	Ready = "Ready"
@@ -32,19 +33,19 @@ class Status:
 	Damaged = "Damaged"
 	Off = "Off"
 
-class Ship:
-    Engines = False #on or off
-    Docked = True
-    Location = "Earth"
-    #Commander = "lordofsraam"
-    Commander = "NightShadow"
-    Fuel = 100 #percent
-    LaunchReady = False
-    PortLatch = True
-    StarboardLatch = True
-    Thrusters = Status.Off
-    Velocity = 0
 
+class Ship:
+	Engines = False #on or off
+	Docked = True
+	Location = "Earth"
+	#Commander = "lordofsraam"
+	Commander = "NightShadow"
+	Fuel = 100 #percent
+	LaunchReady = False
+	PortLatch = True
+	StarboardLatch = True
+	Thrusters = Status.Off
+	Velocity = 0
 
 
 class CommandHandler():
@@ -95,62 +96,64 @@ class CommandHandler():
 #####################################################################################
 
 	def commander(self, params, params_eol):
-               	self.reply("The current commander of this ship is "+Ship.Commander)
+		self.reply("The current commander of this ship is " + Ship.Commander)
 
 	def dismissed(self, params, params_eol):
 		if self.user.isCommander():
-		    self.reply("Yes, sir. Have a good day, sir.")
-		    reactor.stop()
+			self.reply("Yes, sir. Have a good day, sir.")
+			reactor.stop()
 		else:
-		    self.reply("I am sorry, "+self.user.nick+", but only the Commander can dismiss me.")
+			self.reply("I am sorry, " + self.user.nick + ", but only the Commander can dismiss me.")
 
 	def whoami(self, params, params_eol):
 		self.reply("I am an AI created to make space travel in this ship easier.")
-		self.reply("My commanding officer, and the captain of this ship, is "+Ship.Commander)
+		self.reply("My commanding officer, and the captain of this ship, is " + Ship.Commander)
 
 	def shipstat(self, params, params_eol):
 		self.reply("Running diagnostics checks on the ship...")
 		if Ship.Engines:
-		    self.reply("Engines are up and running.")
+			self.reply("Engines are up and running.")
 		else:
-		    self.reply("Engines are off.")
-		self.reply("Fuel charges are at %d%% percent."%Ship.Fuel)
+			self.reply("Engines are off.")
+		self.reply("Fuel charges are at %d%% percent." % Ship.Fuel)
 		if Ship.PortLatch and Ship.StarboardLatch:
 			self.reply("All docking latches are functional.")
 		else:
-			if not Ship.StarboardLatch: self.reply("Starboard docking latch is malfunctioning.")
-			if not Ship.PortLatch: self.reply("Port docking latch is malfunctioning.")
-		self.reply("Thrusters report status: "+Ship.Thrusters)
+			if not Ship.StarboardLatch:
+				self.reply("Starboard docking latch is malfunctioning.")
+			if not Ship.PortLatch:
+				self.reply("Port docking latch is malfunctioning.")
+		self.reply("Thrusters report status: " + Ship.Thrusters)
 		self.whereami(params, params_eol)
 
 	def engines(self, params, params_eol):
 		if self.user.isOfficer():
-		    if "ON" in self.command.upper():
-			if Ship.Engines:
-			    self.reply( "The engines are already running, sir.")
-			else:
-			    self.reply( "Warming up the engines.")
-			    Ship.Engines = True
-		    elif "OFF" in self.command.upper():
-			if not Ship.Engines:
-			    self.reply( "The engines are already off, sir.")
-			else:
-			    self.reply( "Cooling down the engines.")
-			    Ship.Engines = False
-			    Ship.LaunchReady = False
+			if "ON" in self.command.upper():
+				if Ship.Engines:
+					self.reply("The engines are already running, sir.")
+				else:
+					self.reply("Warming up the engines.")
+					Ship.Engines = True
+			elif "OFF" in self.command.upper():
+				if not Ship.Engines:
+					self.reply("The engines are already off, sir.")
+				else:
+					self.reply("Cooling down the engines.")
+					Ship.Engines = False
+					Ship.LaunchReady = False
 		else:
-		    self.reply("Only the Commander or an officer may issue this command.")
+			self.reply("Only the Commander or an officer may issue this command.")
 
 	def crew(self, params, params_eol):
 		if "as an officer" in self.command.lower():
-		    if self.user.isCommander():
-			self.reply("Yes, sir.")
-			officers.append(params[2])
+			if self.user.isCommander():
+				self.reply("Yes, sir.")
+				officers.append(params[2])
 		elif "an officer" in self.command.lower() and "is" in self.command.lower():
-		    if self.command.split(" ")[-3] in officers:
-			    self.reply("Yes, that person is an officer of this ship.")
-		    else:
-			    self.reply("No, that person is a civilian of this ship.")
+			if self.command.split(" ")[-3] in officers:
+				self.reply("Yes, that person is an officer of this ship.")
+			else:
+				self.reply("No, that person is a civilian of this ship.")
 		elif "are the officers" in self.command.lower():
 			self.reply("%s is the commander" % Ship.Commander)
 			for f in officers:
@@ -159,61 +162,60 @@ class CommandHandler():
 
 	def whereami(self, params, params_eol):
 		if Ship.Docked:
-		    self.reply("We are currently docked at "+Ship.Location)
+			self.reply("We are currently docked at " + Ship.Location)
 		else:
-		    self.reply("We are currently at "+Ship.Location)
+			self.reply("We are currently at " + Ship.Location)
 
 	def launchseq(self, params, params_eol):
 		if self.user.isOfficer():
-		    self.reply("Yes, sir. Running launch sequence.")
-		    if Ship.Engines and Ship.Fuel >= 50 and not Ship.Docked and Ship.Thrusters != Status.Off:
+			self.reply("Yes, sir. Running launch sequence.")
+			if Ship.Engines and Ship.Fuel >= 50 and not Ship.Docked and Ship.Thrusters != Status.Off:
 				self.reply("Sequence succeeded. The ship is ready to launch.")
 				Ship.LaunchReady = True
-		    else:
+			else:
 				self.reply("Sir, there were errors during the launch procedure check.")
 		else:
-		    self.reply("Only the Commander or an officer may issue this command.")
+			self.reply("Only the Commander or an officer may issue this command.")
 
 	def dockoff(self, params, params_eol):
 		if self.user.isOfficer():
-		    if "port" in self.command.lower():
+			if "port" in self.command.lower():
 				self.reply("Using manual override to force the latches.")
-				if random.randint(0,1000) > 20:
-				    self.reply("Port latches clear.")
+				if random.randint(0, 1000) > 20:
+					self.reply("Port latches clear.")
 				else:
-				    self.reply("The port-side latches are broken, sir, but the ship is clear.")
-				    Ship.PortLatch = False
-				    Ship.Docked = False
-		    elif "starboard" in self.command.lower():
+					self.reply("The port-side latches are broken, sir, but the ship is clear.")
+					Ship.PortLatch = False
+					Ship.Docked = False
+			elif "starboard" in self.command.lower():
 				self.reply("Using manual override to force the latches.")
-				if random.randint(0,1000) > 20:
-				    self.reply("Starboard latches clear.")
+				if random.randint(0, 1000) > 20:
+					self.reply("Starboard latches clear.")
 				else:
-				    self.reply("The starboard-side latches are broken, sir, but the ship is clear.")
-				    Ship.StarboardLatch = False
-				    Ship.Docked = False
-		    else:
+					self.reply("The starboard-side latches are broken, sir, but the ship is clear.")
+					Ship.StarboardLatch = False
+					Ship.Docked = False
+			else:
 				self.reply("Disengaging from dock.")
-				if random.randint(0,1000) > 10:
-				    self.reply("Starboard latches clear.")
+				if random.randint(0, 1000) > 10:
+					self.reply("Starboard latches clear.")
 				else:
-				    self.reply("Starboard-side latches are jammed, sir.")
-				    return
-				if random.randint(0,1000) > 10:
-				    self.reply("Port latches clear.")
+					self.reply("Starboard-side latches are jammed, sir.")
+					return
+				if random.randint(0, 1000) > 10:
+					self.reply("Port latches clear.")
 				else:
-				    self.reply("Port-side latches are jammed, sir.")
-				    return
+					self.reply("Port-side latches are jammed, sir.")
+					return
 				Ship.Docked = False
 				self.reply("Ship now fully disengaged from the dock, sir.")
 		else:
-		    self.reply("Only the Commander or an officer may issue this command.")
-
+			self.reply("Only the Commander or an officer may issue this command.")
 
 	def thrusters(self, params, params_eol):
 		if self.user.isOfficer():
 			if "status" in self.command.lower():
-				self.reply("Thruster status: "+Ship.Thrusters)
+				self.reply("Thruster status: " + Ship.Thrusters)
 			elif "on" in self.command.lower():
 				if Ship.Engines:
 					self.reply("Thrusters are on and set to auto-stabilize.")
@@ -225,7 +227,7 @@ class CommandHandler():
 				self.reply("Thrusters succesfully powered down.")
 				Ship.LaunchReady = False
 		else:
-		    self.reply("Only the Commander or an officer may issue this command.")
+			self.reply("Only the Commander or an officer may issue this command.")
 
 	def launch(self, params, params_eol):
 		pass
