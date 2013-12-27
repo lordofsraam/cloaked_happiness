@@ -77,7 +77,11 @@ class Galaxy:
 		return None
 
 	def addPlanet(self, planet):
-		if isinstance(planet, Planet):
+		if not isinstance(planet, PlanetEarth) and not isinstance(planet PlanetEarth):
+			return False
+		else:
+			self._planets.append(planet)
+
 
 class MilkyWayGalaxy(Galaxy):
 	def __init__(self):

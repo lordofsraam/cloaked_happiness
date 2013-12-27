@@ -77,7 +77,6 @@ class CommandHandler():
 		self.command = command
 		self.bot = bot
 		self.channel = channel
-		self.currentGalaxy = galaxy
 		self.universe = universe
 		self.user = BasicUser(user)
 		self.COMMANDS = {
@@ -192,7 +191,8 @@ class CommandHandler():
 		if not Ship.LaunchReady:
 			self.reply("Ship is not ready to enter hyperspace.")
 		else:
-
+			# TODO!
+			pass
 
 	def whereami(self, params, params_eol):
 		if Ship.Docked:
