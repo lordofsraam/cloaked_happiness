@@ -32,87 +32,145 @@ from twisted.words.protocols import irc
 from twisted.internet import reactor, protocol
 from twisted.python import log
 
+#custom imports
+import markov
+import CelestialBodies
+
 # system imports
-import time, sys, random
+import time, sys, random, re, string
 
 commands = {}
+complex_commands = {}
 
 officers = []
 
 class Ship:
-    Engines = False #on or off
-    Docked = True
-    Location = "Earth"
-    Commander = "lordofsraam"
-    Fuel = 100 #percent
-    LaunchReady = False
+
+    def __init__(self):
+        self.Engines = False #on or off
+        self.Docked = True
+        self.Orbiting = False
+        self.Location = CelestialBodies.Planet()
+        self.Commander = "lordofsraam"
+        self.FuelAmount = 10000.0
+        self.FuelCapacity = 10000.0
+        self.LaunchReady = False
+        self.Money = 500
+
+    def FuelPercent(self):
+        return (self.FuelAmount / self.FuelCapacity) * 100
+
+    def FuelNeededToLaunch(self):
+        fuelNeeds = self.Location.Mass() / 50.0
+        if self.Location.Atmosphere:
+            fuelNeeds = fuelNeeds * 1.5
+        return fuelNeeds
+
+
+TheShip = Ship()
 
 
 def dismissed(self, user, channel, msg):
-    if user.upper() == Ship.Commander.upper():
+    if user.upper() == TheShip.Commander.upper():
         self.msg(channel,"Yes, sir. Have a good day, sir.")
         reactor.stop()
     else:
         self.msg(channel,"I am sorry, "+user+", but only the Commander can dismiss me.")
 
+
 def whoami(self, user, channel, msg):
     self.msg(channel,"I am an AI created to make space travel in this ship easier.")
-    self.msg(channel,"My commanding officer, and the captain of this ship, is "+Ship.Commander)
+    self.msg(channel,"My commanding officer, and the captain of this ship, is "+TheShip.Commander)
+
 
 def shipstat(self, user, channel, msg):
     self.msg(channel,"Running diagnostics checks on the ship...")
-    if Ship.Engines:
+    if TheShip.Engines:
         self.msg(channel,"Engines are up and running, sir.")
     else:
         self.msg(channel,"Engines are off.")
-    self.msg(channel,"Fuel charges are at %d%% percent."%Ship.Fuel)
+    self.msg(channel,"Fuel charges are at %d%% percent."%TheShip.FuelPercent())
     whereami(self, user, channel, msg)
 
+
 def engines(self, user, channel, msg):
-    if user in officers or user == Ship.Commander:
+    if user in officers or user == TheShip.Commander:
         if "ON" in msg.upper():
-            if Ship.Engines:
+            if TheShip.Engines:
                 self.msg(channel, "The engines are already running, sir.")
             else:
                 self.msg(channel, "Warming up the engines.")
-                Ship.Engines = True
+                TheShip.Engines = True
         elif "OFF" in msg.upper():
-            if not Ship.Engines:
+            if not TheShip.Engines:
                 self.msg(channel, "The engines are already off, sir.")
             else:
                 self.msg(channel, "Cooling down the engines.")
-                Ship.Engines = False
+                TheShip.Engines = False
     else:
         self.msg(channel,"Only the Commander or an officer may issue this command.")
 
+
 def crew(self, user, channel, msg):
     if "as an officer" in msg.lower():
-        if user.upper() == Ship.Commander.upper():
+        if user.upper() == TheShip.Commander.upper():
             self.msg(channel,"Yes, sir.")
             officers.append(msg.split(" ")[-4])
     elif "an officer" in msg.lower() and "is" in msg.lower():
         if msg.split(" ")[-3] in officers:
             self.msg(channel,"Yes, that person is an officer of this ship.")
 
+
 def whereami(self, user, channel, msg):
-    if Ship.Docked:
-        self.msg(channel,"We are currently docked at "+Ship.Location)
+    if TheShip.Docked:
+        self.msg(channel,"We are currently docked at "+TheShip.Location.Name)
     else:
-        self.msg(channel,"We are currently at "+Ship.Location)
+        self.msg(channel,"We are currently at "+TheShip.Location.Name)
+
+def planetScan(self, user, channel, msg):
+        self.msg(channel,"Planetary Surveilance Module results:")
+        self.msg(channel,"Name: " + TheShip.Location.Name)
+        self.msg(channel,"Mass: " + TheShip.Location.Mass() + " | Inhabited: " + TheShip.Location.Inhabited + " | Atmosphere: " +  TheShip.Location.Atmosphere)
+        self.msg(channel,"Fuel to Orbit Requirement: " + TheShip.FuelNeededToLaunch())
 
 def launchseq(self, user, channel, msg):
-    if user in officers or user == Ship.Commander:
+    if user in officers or user == TheShip.Commander:
         self.msg(channel,"Yes, sir. Running launch sequence.")
-        if Ship.Engines and Ship.Fuel >= 50 and not Ship.Docked:
+
+        TheShip.LaunchReady = True
+
+        if not TheShip.Engines:
+            self.msg(channel,"The engines are not operating.")
+            TheShip.LaunchReady = False
+
+        if TheShip.FuelAmount < TheShip.FuelNeededToLaunch():
+            self.msg(channel,"We do not have enough fuel to get into orbit.")
+            TheShip.LaunchReady = False
+
+        if TheShip.Docked:
+            self.msg(channel,"The ship is still docked.")
+            TheShip.LaunchReady = False
+
+        if TheShip.LaunchReady:
             self.msg(channel,"Sequence succeeded. The ship is ready to launch.")
-            Ship.LaunchReady = True
-        else:
-            self.msg(channel,"Sir, there were errors during the launch procedure check.")
     else:
         self.msg(channel,"Only the Commander or an officer may issue this command.")
 
+
+def launch(self, user, channel, msg, reg_groups):
+    if user == TheShip.Commander:
+        if TheShip.LaunchReady:
+            self.msg(channel,"Yes, sir. Commencing burn into orbit.")
+            TheShip.FuelAmount -= TheShip.FuelNeededToLaunch()
+            TheShip.Orbiting = True
+        else:
+            self.msg(channel,"The ship is not ready for launch, sir.")
+    else:
+        self.msg(channel,"Only the Commandermay issue this command.")
+
+
 def dockoff(self, user, channel, msg):
-    if user in officers or user == Ship.Commander:
+    if user in officers or user == TheShip.Commander:
         self.msg(channel,"Disengaging from dock.")
         if random.randint(0,1000) > 10:
             self.msg(channel,"Starboard latches clear.")
@@ -124,10 +182,20 @@ def dockoff(self, user, channel, msg):
             return
         else:
             self.msg(channel,"Port-side latches are jammed, sir.")
-        Ship.Docked = False
-        self.msg(channel,"Ship now fully disengaged from the dock, sir.")
+        TheShip.Docked = False
+        self.msg(channel,"TheShip now fully disengaged from the dock, sir.")
     else:
         self.msg(channel,"Only the Commander or an officer may issue this command.")
+
+
+def promote(self, user, channel, msg, reg_groups):
+    if user in officers or user == TheShip.Commander:
+        if not reg_groups[0] in officers:
+            self.msg(channel, "Yes, sir")
+            officers.append(reg_groups[0])
+            self.msg(channel, reg_groups[0] + " has been promoted.")
+
+
 
 commands["you are dismissed"] = dismissed
 commands["who are you"] = whoami
@@ -141,6 +209,10 @@ commands["prepare to launch"] = launchseq
 commands["prep to launch"] = launchseq
 commands["undock"] = dockoff
 commands["disengage from dock"] = dockoff
+commands["planetscan"] = planetScan
+
+complex_commands["make (.*) an officer"] = promote
+complex_commands["(?=.*\b(put|launch)\b)(?=.*\b(into|in)\b)(?=.*\b(orbit)\b)^.*$"] = launch
 
 class MessageLogger:
     """
@@ -203,12 +275,16 @@ class LogBot(irc.IRCClient):
         if msg.startswith(self.nickname + ":") or msg.startswith(self.nickname + ","):
             #msg = "%s: I am a log bot" % user
             #self.msg(channel, msg)
-            if "who is in charge".upper() in msg.upper():
-                self.msg(channel,"The current commander of this ship is "+Ship.Commander)
+            res = None
+            for cc in complex_commands:
+                    res = re.search(cc, msg)
+            if res:
+                complex_commands[cc](self, user, channel, msg, res.groups())
             else:
                 for i in commands:
                     if i.upper() in msg.upper():
                         commands[i](self, user, channel, msg)
+
             #elif "you are dismissed".upper() in msg.upper():
                 #reactor.stop()
             self.logger.log("<%s> %s" % (self.nickname, msg))
@@ -272,7 +348,7 @@ if __name__ == '__main__':
     f = LogBotFactory(sys.argv[1], sys.argv[2])
 
     # connect factory to this host and port
-    reactor.connectTCP("irc.azuru.net", 6667, f)
+    reactor.connectTCP("10.8.0.38", 6667, f)
 
     # run bot
     reactor.run()
