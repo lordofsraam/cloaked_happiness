@@ -75,10 +75,7 @@ for i in range(3):
     level = [item for sublist in map(lambda x: x.suggested, level) for item in sublist]
     
     for l in level:
-        if l.title in db:
-            db[l.title] += 1
-        else:
-            db[l.title] = 1
+        db[l.title] = db.setdefault(l.title, 0) + 1
 
  most_common = max(db.iteritems(), key=operator.itemgetter(1))[0]
 
