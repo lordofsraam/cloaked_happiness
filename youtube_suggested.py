@@ -73,7 +73,7 @@ for i in range(3):
         page.recur()
     print 'Recur lvl', i+1, 'complete'
     level = [item for sublist in map(lambda x: x.suggested, level) for item in sublist]
-    
+    #map(lamda x: db[x.title] = db.setdefault(x.title, 0) + 1, level)
     for l in level:
         db[l.title] = db.setdefault(l.title, 0) + 1
 
