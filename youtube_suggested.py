@@ -1,5 +1,6 @@
 import urllib2
 from bs4 import BeautifulSoup
+import operator
 
 class Link(object):
     def __init__(self, title, href):
@@ -25,7 +26,7 @@ class Page(object):
         
         self.title = self.page.title.text
         self.suggested = []
-        for s in res:
+        for s in res[:3]:
             self.suggested.append(Link(s.attrs['title'], s.attrs['href']))
 
     def __str__(self):
@@ -50,7 +51,7 @@ class Page(object):
         
         return False
 
-
+db = {}
 vid_page_url = 'https://www.youtube.com/watch?v=0sqhSybK0P0'
 
 print 'Getting page from', vid_page_url, '...',
@@ -65,3 +66,23 @@ print 'Done'
 c = map(lambda x: x.contains(vid_page_url), p.suggested).count(True)
 
 print c, 'pages from the original suggestions contain the original video'
+
+level = [p]
+for i in range(3):
+    for page in level:
+        page.recur()
+    print 'Recur lvl', i+1, 'complete'
+    level = [item for sublist in map(lambda x: x.suggested, level) for item in sublist]
+    
+    for l in level:
+        if l.title in db:
+            db[l.title] += 1
+        else:
+            db[l.title] = 1
+
+ most_common = max(db.iteritems(), key=operator.itemgetter(1))[0]
+
+ print 'Most common video:'
+ print most_common
+
+ counts = db.values()
