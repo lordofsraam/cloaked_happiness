@@ -6,7 +6,7 @@ import numpy as np
 
 
 RECUR_DEPTH = 6
-TREE_WIDTH = 4
+TREE_WIDTH = 2
 
 
 class Link(object):
@@ -128,7 +128,10 @@ plt.show()
 img = []
 max_len = len(weights[-1])
 for w in weights:
-    a = np.pad(w, (max_len-len(w))/2, 'constant',constant_values=0)
+    n = max_len-len(w)
+    l = n/2
+    r = n-l
+    a = np.pad(w, (l,r), 'constant',constant_values=0)
     img.append(a)
 
 plt.imshow(img, interpolation='gaussian')
