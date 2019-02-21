@@ -1,6 +1,12 @@
 import urllib2
 from bs4 import BeautifulSoup
 import operator
+import matplotlib.pyplot as plt
+import numpy as np
+
+
+RECUR_DEPTH = 6
+TREE_WIDTH = 4
 
 
 class Link(object):
@@ -35,15 +41,24 @@ class Page(object):
                                      attrs={'class': 'content-link spf-link yt-uix-sessionlink spf-link'})
 
         if len(res) == 0:
+            open('/tmp/dump.html', 'w').write(str(self.page))
             raise ValueError('No suggested links found for ' + self.url)
 
         self.title = self.page.title.text
         self.suggested = []
-        for s in res[:3]:
+        for s in res[:TREE_WIDTH]:
             self.suggested.append(Link(s.attrs['title'], s.attrs['href']))
 
     def __str__(self):
         return self.title
+
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.url == other.url
+        return False
+    
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     def recur(self):
         if Page in map(type, self.suggested):
@@ -65,30 +80,38 @@ class Page(object):
         return False
 
 
+
 db = {}
-vid_page_url = 'https://www.youtube.com/watch?v=dBbKtOvfTiE'
+vid_page_url = 'https://www.youtube.com/watch?v=dCGS067s0zo'
 
 print 'Getting page from', vid_page_url, '...',
-
 p = Page(vid_page_url)
-
-print 'Done'
-print 'Creating pages from suggestions...'
-p.recur()
 print 'Done'
 
-c = map(lambda x: x.contains(vid_page_url), p.suggested).count(True)
+current_level = [p]
+rings = [current_level]
+weights = []
 
-print c, 'pages from the original suggestions contain the original video'
-
-level = [p]
-for i in range(3):
-    for page in level:
+for i in range(RECUR_DEPTH):
+    # Call recur to convert all leaf nodes into Pages instead of Links
+    for page in current_level:
         page.recur()
+    
     print 'Recur lvl', i + 1, 'complete'
-    level = [item for sublist in map(lambda x: x.suggested, level) for item in sublist]
-    # map(lambda x: db[x.title] = db.setdefault(x.title, 0) + 1, level)
-    for l in level:
+
+    # Put all leaf nodes into a single list
+    current_level = [item for sublist in map(lambda x: x.suggested, current_level) for item in sublist]
+
+    # How often each previous page appears in the current level
+    level_weight = [current_level.count(page) for page in rings[-1]]
+
+    print 'Weights:', level_weight
+    weights.append(level_weight)
+
+    rings.append(current_level)
+
+    # Update the db for stat distribution
+    for l in current_level:
         db[l.title] = db.setdefault(l.title, 0) + 1
 
 most_common = max(db.iteritems(), key=operator.itemgetter(1))[0]
@@ -97,3 +120,16 @@ print 'Most common video:'
 print most_common
 
 counts = db.values()
+counts.sort(reverse=True)
+
+plt.bar(range(len(counts)),counts)
+plt.show()
+
+img = []
+max_len = len(weights[-1])
+for w in weights:
+    a = np.pad(w, (max_len-len(w))/2, 'constant',constant_values=0)
+    img.append(a)
+
+plt.imshow(img, interpolation='gaussian')
+plt.show()
