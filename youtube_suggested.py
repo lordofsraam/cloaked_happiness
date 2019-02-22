@@ -1,12 +1,15 @@
 import urllib2
 from bs4 import BeautifulSoup
 import operator
+from random import sample
 import matplotlib.pyplot as plt
 import numpy as np
 
 
-RECUR_DEPTH = 6
-TREE_WIDTH = 2
+RECUR_DEPTH = 10  # How deep into YT to go
+TREE_WIDTH = 5  # How many suggested videos to click on
+LIMIT_WIDTH = 5  # How many samples from all suggested videos to take
+SPREAD = 1  # How many suggested videos to click on After reaching LIMIT_WIDTH
 
 
 class Link(object):
@@ -89,7 +92,7 @@ p = Page(vid_page_url)
 print 'Done'
 
 current_level = [p]
-rings = [current_level]
+rings = []
 weights = []
 
 for i in range(RECUR_DEPTH):
@@ -101,20 +104,29 @@ for i in range(RECUR_DEPTH):
 
     # Put all leaf nodes into a single list
     current_level = [item for sublist in map(lambda x: x.suggested, current_level) for item in sublist]
+    # Pick out random samples to prevent exponential growth
+    current_level = sample(current_level, min(LIMIT_WIDTH, len(current_level)))
+    
+    if len(current_level) == LIMIT_WIDTH:
+        TREE_WIDTH = SPREAD
+        level_weight = [float(0)] * LIMIT_WIDTH
+        for i, ring in enumerate(rings):
+            print '\tRaw vals for ring', i, [current_level.count(page) for page in ring]
+            new_vals = [float(current_level.count(page))/((i+1)**2) for page in ring]
+            level_weight = map(operator.add, new_vals, level_weight)
 
-    # How often each previous page appears in the current level
-    level_weight = [current_level.count(page) for page in rings[-1]]
+        print 'Weights:', level_weight
+        weights.append(level_weight)
 
-    print 'Weights:', level_weight
-    weights.append(level_weight)
-
-    rings.append(current_level)
+        rings.append(current_level)
 
     # Update the db for stat distribution
     for l in current_level:
         db[l.title] = db.setdefault(l.title, 0) + 1
 
 most_common = max(db.iteritems(), key=operator.itemgetter(1))[0]
+
+print map(str, rings[0])
 
 print 'Most common video:'
 print most_common
