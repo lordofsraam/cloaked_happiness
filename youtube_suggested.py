@@ -10,6 +10,7 @@ RECUR_DEPTH = 10  # How deep into YT to go
 TREE_WIDTH = 5  # How many suggested videos to click on
 LIMIT_WIDTH = 5  # How many samples from all suggested videos to take
 SPREAD = 1  # How many suggested videos to click on After reaching LIMIT_WIDTH
+EXP_DECIMATION = 1  # How bias against videos farther from center to weigh against
 
 
 class Link(object):
@@ -112,7 +113,7 @@ for i in range(RECUR_DEPTH):
         level_weight = [float(0)] * LIMIT_WIDTH
         for i, ring in enumerate(rings):
             print '\tRaw vals for ring', i, [current_level.count(page) for page in ring]
-            new_vals = [float(current_level.count(page))/((i+1)**2) for page in ring]
+            new_vals = [float(current_level.count(page))/((i+1)**EXP_DECIMATION) for page in ring]
             level_weight = map(operator.add, new_vals, level_weight)
 
         print 'Weights:', level_weight
