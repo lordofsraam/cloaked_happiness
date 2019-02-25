@@ -1,17 +1,21 @@
 import urllib2
+import urllib
 from bs4 import BeautifulSoup
 import operator
 from random import sample
 import matplotlib.pyplot as plt
 import numpy as np
+from cookielib import CookieJar
 
 
-RECUR_DEPTH = 15  # How deep into YT to go
+RECUR_DEPTH = 35  # How deep into YT to go
 TREE_WIDTH = 2  # How many suggested videos to click on
 LIMIT_WIDTH = 10  # How many samples from all suggested videos to take
-SPREAD = 1  # How many suggested videos to click on After reaching LIMIT_WIDTH
+SPREAD = 2  # How many suggested videos to click on After reaching LIMIT_WIDTH
 EXP_DECIMATION = 1.5  # How bias against videos farther from center to weigh against
 
+cj = CookieJar()
+opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
 
 class Link(object):
     def __init__(self, title, href):
@@ -26,7 +30,8 @@ class SearchPage(object):
     def __init__(self, keyword):
         self.url = 'https://www.youtube.com/results?search_query='+keyword
 
-        vid_page_src = urllib2.urlopen(self.url)
+        # vid_page_src = urllib2.urlopen(self.url)
+        vid_page_src = opener.open(self.url)
 
         if vid_page_src is None:
             raise ValueError('Failed to load ' + self.url)
@@ -53,10 +58,10 @@ class SearchPage(object):
 class Page(object):
     def __init__(self, link):
         if type(link) == Link:
-            vid_page_src = urllib2.urlopen(link.url)
+            vid_page_src = opener.open(link.url)
             self.url = link.url
         else:
-            vid_page_src = urllib2.urlopen(link)
+            vid_page_src = opener.open(link)
             self.url = link
 
         if vid_page_src is None:
@@ -115,7 +120,9 @@ class Page(object):
 
 db = {}
 
-s = SearchPage('dogs')
+kw = ''
+
+s = SearchPage(urllib.quote_plus(kw))
 
 vid_page_url = s.results[0]
 
