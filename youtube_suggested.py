@@ -6,11 +6,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-RECUR_DEPTH = 10  # How deep into YT to go
-TREE_WIDTH = 5  # How many suggested videos to click on
-LIMIT_WIDTH = 5  # How many samples from all suggested videos to take
+RECUR_DEPTH = 15  # How deep into YT to go
+TREE_WIDTH = 2  # How many suggested videos to click on
+LIMIT_WIDTH = 10  # How many samples from all suggested videos to take
 SPREAD = 1  # How many suggested videos to click on After reaching LIMIT_WIDTH
-EXP_DECIMATION = 1  # How bias against videos farther from center to weigh against
+EXP_DECIMATION = 1.5  # How bias against videos farther from center to weigh against
 
 
 class Link(object):
@@ -20,6 +20,34 @@ class Link(object):
 
     def __str__(self):
         return self.title
+
+
+class SearchPage(object):
+    def __init__(self, keyword):
+        self.url = 'https://www.youtube.com/results?search_query='+keyword
+
+        vid_page_src = urllib2.urlopen(self.url)
+
+        if vid_page_src is None:
+            raise ValueError('Failed to load ' + self.url)
+
+        self.page = BeautifulSoup(vid_page_src, 'html.parser')
+
+        res = self.page.find_all('a',
+                                 attrs={'class': 'yt-uix-tile-link yt-ui-ellipsis yt-ui-ellipsis-2 yt-uix-sessionlink spf-link'})
+        if len(res) == 0:
+            # Sometimes the html class doesnt have spaces and bs4 doesn't strip
+            #    so we gotta look again
+            res = self.page.find_all('a',
+                                     attrs={'class': 'yt-uix-tile-link yt-ui-ellipsis yt-ui-ellipsis-2 yt-uix-sessionlink spf-link '})
+
+        if len(res) == 0:
+            open('/tmp/search_dump.html', 'w').write(str(self.page))
+            raise ValueError('No search results found for ' + self.url)
+
+        self.results = []
+        for s in res:
+            self.results.append(Link(s.attrs['title'], s.attrs['href']))
 
 
 class Page(object):
@@ -86,7 +114,10 @@ class Page(object):
 
 
 db = {}
-vid_page_url = 'https://www.youtube.com/watch?v=dCGS067s0zo'
+
+s = SearchPage('dogs')
+
+vid_page_url = s.results[0]
 
 print 'Getting page from', vid_page_url, '...',
 p = Page(vid_page_url)
@@ -127,7 +158,10 @@ for i in range(RECUR_DEPTH):
 
 most_common = max(db.iteritems(), key=operator.itemgetter(1))[0]
 
-print map(str, rings[0])
+try:
+    print map(str, rings[0])
+except UnicodeEncodeError:
+    print 'Unicode mess detected'
 
 print 'Most common video:'
 print most_common
