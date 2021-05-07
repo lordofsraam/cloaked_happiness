@@ -1,6 +1,12 @@
 import functools
 from inspect import signature
 
+"""
+TODO: Instead of tokenizing the string (leads to major issues), should make the parsers accept 
+the entire string, "consume" only what they need, and return the new truncated string that will 
+be passed along to the next parameter.
+"""
+
 class DiceRollParser(object):
     def __call__(self, token: str) -> int:
         magic_goop = r"(\d+d\d+)"
